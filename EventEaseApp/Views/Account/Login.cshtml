@@ -1,0 +1,100 @@
+@model EventEaseApp.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - EventEase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-left-content">
+                <h1 class="auth-brand">EventEase</h1>
+                <p class="auth-tagline">Streamline your venue bookings with our cloud-powered platform</p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#127970;</span>
+                        <div>
+                            <strong>Venue Management</strong>
+                            <p>Browse and manage venues with real-time availability</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#128197;</span>
+                        <div>
+                            <strong>Smart Scheduling</strong>
+                            <p>Prevent double bookings with intelligent conflict detection</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#9729;</span>
+                        <div>
+                            <strong>Cloud-Powered</strong>
+                            <p>Secure and scalable on Microsoft Azure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <div class="auth-form-wrapper">
+                <h2 class="auth-form-title">Welcome back</h2>
+                <p class="auth-form-subtitle">Sign in to your EventEase account</p>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-eventease" role="alert">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-eventease" role="alert">@TempData["ErrorMessage"]</div>
+                }
+
+                <form asp-action="Login" asp-controller="Account" method="post">
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email address</label>
+                        <input asp-for="Email" class="form-control form-control-lg auth-input" placeholder="name@company.com" autofocus />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" class="form-control form-control-lg auth-input" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-eventease-primary btn-lg w-100 auth-btn">Sign In</button>
+                </form>
+
+                <p class="text-center mt-4 text-muted">
+                    Don't have an account?
+                    <a asp-action="Register" asp-controller="Account" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="auth-link">Create one</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

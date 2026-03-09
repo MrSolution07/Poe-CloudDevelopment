@@ -1,0 +1,101 @@
+@model EventEaseApp.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account - EventEase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-left-content">
+                <h1 class="auth-brand">EventEase</h1>
+                <p class="auth-tagline">Join the platform trusted by booking specialists across the country</p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#128274;</span>
+                        <div>
+                            <strong>Secure Access</strong>
+                            <p>Email verification and encrypted passwords</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#128202;</span>
+                        <div>
+                            <strong>Live Dashboard</strong>
+                            <p>Real-time stats on bookings, events, and venues</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="auth-feature-icon">&#128269;</span>
+                        <div>
+                            <strong>Advanced Filtering</strong>
+                            <p>Search and filter across all your data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <div class="auth-form-wrapper">
+                <h2 class="auth-form-title">Create your account</h2>
+                <p class="auth-form-subtitle">Get started with EventEase in seconds</p>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-eventease" role="alert">@TempData["ErrorMessage"]</div>
+                }
+
+                <form asp-action="Register" asp-controller="Account" method="post">
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label">Full Name</label>
+                        <input asp-for="FullName" class="form-control form-control-lg auth-input" placeholder="Your full name" autofocus />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email address</label>
+                        <input asp-for="Email" class="form-control form-control-lg auth-input" placeholder="name@company.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" class="form-control form-control-lg auth-input" placeholder="At least 6 characters" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="form-control form-control-lg auth-input" placeholder="Re-enter your password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-eventease-primary btn-lg w-100 auth-btn">Create Account</button>
+                </form>
+
+                <p class="text-center mt-4 text-muted">
+                    Already have an account?
+                    <a asp-action="Login" asp-controller="Account" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="auth-link">Sign in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventEaseApp.Data;
@@ -6,6 +7,7 @@ using EventEaseApp.Services;
 
 namespace EventEaseApp.Controllers;
 
+[Authorize]
 public class VenuesController : Controller
 {
     private readonly EventEaseContext _context;

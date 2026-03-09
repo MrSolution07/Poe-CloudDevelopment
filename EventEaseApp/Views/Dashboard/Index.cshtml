@@ -1,0 +1,137 @@
+@model EventEaseApp.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-welcome">
+    <h1>Welcome, @Model.UserName</h1>
+    <p>Here is an overview of your EventEase platform.</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="color: var(--eventease-primary);">&#127970;</div>
+            <div class="stat-card-value">@Model.TotalVenues</div>
+            <div class="stat-card-label">Total Venues</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="color: #6366f1;">&#128197;</div>
+            <div class="stat-card-value">@Model.TotalEvents</div>
+            <div class="stat-card-label">Total Events</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="color: var(--eventease-accent);">&#128203;</div>
+            <div class="stat-card-value">@Model.TotalBookings</div>
+            <div class="stat-card-label">Total Bookings</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="stat-card" style="text-align: left; padding: 1.5rem;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="stat-card-label" style="font-size: 1rem; font-weight: 600; color: var(--eventease-text);">Venues Available</span>
+                <span class="badge badge-eventease-available">@Model.AvailableVenues / @Model.TotalVenues</span>
+            </div>
+            @if (Model.TotalVenues > 0)
+            {
+                <div class="progress" style="height: 8px; border-radius: 4px;">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: @((int)((double)Model.AvailableVenues / Model.TotalVenues * 100))%; background-color: #10b981;"
+                         aria-valuenow="@Model.AvailableVenues" aria-valuemin="0" aria-valuemax="@Model.TotalVenues"></div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card" style="text-align: left; padding: 1.5rem;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="stat-card-label" style="font-size: 1rem; font-weight: 600; color: var(--eventease-text);">Upcoming Events</span>
+                <span class="badge" style="background-color: #6366f1;">@Model.UpcomingEvents</span>
+            </div>
+            <p class="text-muted mb-0 small">Events scheduled from today onwards.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card card-eventease">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-semibold mb-3">Recent Bookings</h3>
+                @if (Model.RecentBookings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted fw-medium">ID</th>
+                                    <th class="text-muted fw-medium">Event</th>
+                                    <th class="text-muted fw-medium">Venue</th>
+                                    <th class="text-muted fw-medium">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var b in Model.RecentBookings)
+                                {
+                                    <tr>
+                                        <td>@b.BookingId</td>
+                                        <td>@b.Event?.EventName</td>
+                                        <td>@b.Venue?.VenueName</td>
+                                        <td>@b.BookingDate.ToString("dd MMM yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <a asp-controller="Bookings" asp-action="Index" class="btn btn-sm btn-outline-eventease mt-3">View All Bookings</a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No bookings yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-eventease">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-semibold mb-3">Upcoming Events</h3>
+                @if (Model.UpcomingEventsList.Any())
+                {
+                    @foreach (var ev in Model.UpcomingEventsList)
+                    {
+                        <div class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                            <div class="text-center" style="min-width: 50px;">
+                                <div class="fw-bold" style="font-size: 1.25rem; color: var(--eventease-primary);">@ev.EventDate.Day</div>
+                                <div class="text-muted small">@ev.EventDate.ToString("MMM")</div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">@ev.EventName</div>
+                                <div class="text-muted small">
+                                    @(ev.Venue?.VenueName ?? "No venue")
+                                    @if (ev.EventType != null)
+                                    {
+                                        <span class="ms-1">&middot; @ev.EventType.Name</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <a asp-controller="Events" asp-action="Index" class="btn btn-sm btn-outline-eventease mt-1">View All Events</a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No upcoming events.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

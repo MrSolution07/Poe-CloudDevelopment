@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using EventEaseApp.Services;
 
 namespace EventEaseApp.Controllers;
 
+[Authorize]
 public class EventsController : Controller
 {
     private readonly EventEaseContext _context;

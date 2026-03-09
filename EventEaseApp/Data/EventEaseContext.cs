@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using EventEaseApp.Models;
 
 namespace EventEaseApp.Data;
 
-public class EventEaseContext : DbContext
+public class EventEaseContext : IdentityDbContext<ApplicationUser>
 {
     public EventEaseContext(DbContextOptions<EventEaseContext> options) : base(options) { }
 
@@ -57,7 +59,6 @@ public class EventEaseContext : DbContext
                   .HasForeignKey(b => b.VenueId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            // Prevent double booking: one venue per date
             entity.HasIndex(b => new { b.VenueId, b.BookingDate }).IsUnique();
         });
 
