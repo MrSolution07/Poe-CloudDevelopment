@@ -2,37 +2,55 @@
 
 @{
     ViewData["Title"] = "Bookings";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Bookings", null) };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Bookings</h2>
-    <a asp-action="Create" class="btn btn-primary">New Booking</a>
+<partial name="_Breadcrumb" />
+
+<div class="page-header">
+    <h1 class="page-title">Bookings</h1>
+    <a asp-action="Create" class="btn btn-eventease-primary">New Booking</a>
 </div>
 
-<table class="table table-striped table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Booking ID</th>
-            <th>Event</th>
-            <th>Venue</th>
-            <th>Booking Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var booking in Model)
-        {
-            <tr>
-                <td>@booking.BookingId</td>
-                <td>@booking.Event?.EventName</td>
-                <td>@booking.Venue?.VenueName</td>
-                <td>@booking.BookingDate.ToString("dd MMM yyyy")</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-primary">Details</a>
-                    <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-warning">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-danger">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (Model.Any())
+{
+    <div class="table-responsive-card">
+        <table class="table table-eventease table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Event</th>
+                    <th>Venue</th>
+                    <th>Booking Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var booking in Model)
+                {
+                    <tr>
+                        <td>@booking.BookingId</td>
+                        <td>@booking.Event?.EventName</td>
+                        <td>@booking.Venue?.VenueName</td>
+                        <td>@booking.BookingDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <a asp-action="Details" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-eventease">Details</a>
+                                <a asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-warning">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    ViewData["EmptyStateTitle"] = "No bookings yet";
+    ViewData["EmptyStateMessage"] = "Create your first booking to get started.";
+    ViewData["EmptyStateActionText"] = "New Booking";
+    ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    <partial name="_EmptyState" />
+}

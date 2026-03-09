@@ -2,40 +2,44 @@
 
 @{
     ViewData["Title"] = "New Booking";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Bookings", Url.Action("Index")), ("Create", null) };
 }
 
-<h2>New Booking</h2>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<h2 class="page-title mb-4">New Booking</h2>
 
-            <div class="mb-3">
-                <label asp-for="EventId" class="form-label">Event</label>
-                <select asp-for="EventId" asp-items="@ViewBag.EventId" class="form-select">
-                    <option value="">-- Select Event --</option>
-                </select>
-                <span asp-validation-for="EventId" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="VenueId" class="form-label">Venue</label>
-                <select asp-for="VenueId" asp-items="@ViewBag.VenueId" class="form-select">
-                    <option value="">-- Select Venue --</option>
-                </select>
-                <span asp-validation-for="VenueId" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="BookingDate" class="form-label"></label>
-                <input asp-for="BookingDate" class="form-control" type="date" />
-                <span asp-validation-for="BookingDate" class="text-danger"></span>
-            </div>
+<div class="form-card">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <button type="submit" class="btn btn-primary">Create Booking</button>
+        <div class="form-section-title">Booking Details</div>
+        <div class="mb-3">
+            <label asp-for="EventId" class="form-label">Event</label>
+            <select asp-for="EventId" asp-items="@ViewBag.EventId" class="form-select">
+                <option value="">-- Select Event --</option>
+            </select>
+            <span asp-validation-for="EventId" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="VenueId" class="form-label">Venue</label>
+            <select asp-for="VenueId" asp-items="@ViewBag.VenueId" class="form-select">
+                <option value="">-- Select Venue --</option>
+            </select>
+            <span asp-validation-for="VenueId" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="BookingDate" class="form-label"></label>
+            <input asp-for="BookingDate" class="form-control" type="date" />
+            <span asp-validation-for="BookingDate" class="text-danger"></span>
+            <small class="form-text text-muted">Double bookings for the same venue on the same date are prevented.</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-eventease-primary">Create Booking</button>
             <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

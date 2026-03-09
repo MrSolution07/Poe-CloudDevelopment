@@ -2,48 +2,58 @@
 
 @{
     ViewData["Title"] = "Create Venue";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Venues", Url.Action("Index")), ("Create", null) };
 }
 
-<h2>Create Venue</h2>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<h2 class="page-title mb-4">Create Venue</h2>
 
-            <div class="mb-3">
+<div class="form-card">
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="form-section-title">Basic Information</div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
                 <label asp-for="VenueName" class="form-label"></label>
-                <input asp-for="VenueName" class="form-control" />
+                <input asp-for="VenueName" class="form-control" placeholder="e.g. Grand Ballroom" />
                 <span asp-validation-for="VenueName" class="text-danger"></span>
             </div>
-            <div class="mb-3">
+            <div class="col-md-6 mb-3">
                 <label asp-for="Location" class="form-label"></label>
-                <input asp-for="Location" class="form-control" />
+                <input asp-for="Location" class="form-control" placeholder="e.g. 123 Main Street" />
                 <span asp-validation-for="Location" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Capacity" class="form-label"></label>
-                <input asp-for="Capacity" class="form-control" type="number" />
-                <span asp-validation-for="Capacity" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="ImageUrl" class="form-label">Image URL (placeholder)</label>
-                <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Or Upload Image</label>
-                <input type="file" name="imageFile" class="form-control" accept="image/*" />
-            </div>
-            <div class="mb-3 form-check">
-                <input asp-for="IsAvailable" class="form-check-input" />
-                <label asp-for="IsAvailable" class="form-check-label"></label>
-            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Capacity" class="form-label"></label>
+            <input asp-for="Capacity" class="form-control" type="number" min="1" placeholder="e.g. 200" />
+            <span asp-validation-for="Capacity" class="text-danger"></span>
+        </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
+        <div class="form-section-title mt-4">Image</div>
+        <div class="mb-3">
+            <label asp-for="ImageUrl" class="form-label">Image URL (placeholder or link)</label>
+            <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+            <small class="form-text text-muted">Enter a URL or upload an image below. Azure Blob Storage stores uploaded images.</small>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Or Upload Image</label>
+            <input type="file" name="imageFile" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="form-section-title mt-4">Availability</div>
+        <div class="mb-4 form-check">
+            <input asp-for="IsAvailable" class="form-check-input" />
+            <label asp-for="IsAvailable" class="form-check-label"></label>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-eventease-primary">Create</button>
             <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

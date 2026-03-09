@@ -2,29 +2,31 @@
 
 @{
     ViewData["Title"] = "Delete Venue";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Venues", Url.Action("Index")), ("Delete", null) };
 }
 
-<h2>Delete Venue</h2>
-<h4 class="text-danger">Are you sure you want to delete this venue?</h4>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        <dl class="row">
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.VenueName)</dt>
-            <dd class="col-sm-8">@Model.VenueName</dd>
+<div class="delete-warning mb-4">
+    <h2 class="h4 fw-semibold text-danger mb-3">Delete Venue</h2>
+    <p class="mb-0">Are you sure you want to delete this venue? This action cannot be undone. Venues with active bookings cannot be deleted.</p>
+</div>
 
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Location)</dt>
-            <dd class="col-sm-8">@Model.Location</dd>
+<div class="form-card">
+    <dl class="row mb-0">
+        <dt class="col-sm-3 text-muted">@Html.DisplayNameFor(m => m.VenueName)</dt>
+        <dd class="col-sm-9">@Model.VenueName</dd>
 
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Capacity)</dt>
-            <dd class="col-sm-8">@Model.Capacity</dd>
-        </dl>
+        <dt class="col-sm-3 text-muted">@Html.DisplayNameFor(m => m.Location)</dt>
+        <dd class="col-sm-9">@Model.Location</dd>
 
-        <form asp-action="Delete">
-            <input type="hidden" asp-for="VenueId" />
-            <button type="submit" class="btn btn-danger">Delete</button>
-            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-        </form>
-    </div>
+        <dt class="col-sm-3 text-muted">@Html.DisplayNameFor(m => m.Capacity)</dt>
+        <dd class="col-sm-9">@Model.Capacity</dd>
+    </dl>
+
+    <form asp-action="Delete" class="mt-4">
+        <input type="hidden" asp-for="VenueId" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
 </div>

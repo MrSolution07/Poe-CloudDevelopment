@@ -2,55 +2,62 @@
 
 @{
     ViewData["Title"] = "Create Event";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Events", Url.Action("Index")), ("Create", null) };
 }
 
-<h2>Create Event</h2>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<h2 class="page-title mb-4">Create Event</h2>
 
-            <div class="mb-3">
-                <label asp-for="EventName" class="form-label"></label>
-                <input asp-for="EventName" class="form-control" />
-                <span asp-validation-for="EventName" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
+<div class="form-card">
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="form-section-title">Basic Information</div>
+        <div class="mb-3">
+            <label asp-for="EventName" class="form-label"></label>
+            <input asp-for="EventName" class="form-control" placeholder="e.g. Tech Summit 2026" />
+            <span asp-validation-for="EventName" class="text-danger"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
                 <label asp-for="EventDate" class="form-label"></label>
                 <input asp-for="EventDate" class="form-control" type="datetime-local" />
                 <span asp-validation-for="EventDate" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-            </div>
-            <div class="mb-3">
-                <label asp-for="VenueId" class="form-label">Venue</label>
-                <select asp-for="VenueId" asp-items="@ViewBag.VenueId" class="form-select">
-                    <option value="">-- Select Venue (optional) --</option>
-                </select>
-            </div>
-            <div class="mb-3">
+            <div class="col-md-6 mb-3">
                 <label asp-for="EventTypeId" class="form-label">Event Type</label>
                 <select asp-for="EventTypeId" asp-items="@ViewBag.EventTypeId" class="form-select">
                     <option value="">-- Select Event Type --</option>
                 </select>
             </div>
-            <div class="mb-3">
-                <label asp-for="ImageUrl" class="form-label">Image URL (placeholder)</label>
-                <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Or Upload Image</label>
-                <input type="file" name="imageFile" class="form-control" accept="image/*" />
-            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Brief description of the event"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="VenueId" class="form-label">Venue</label>
+            <select asp-for="VenueId" asp-items="@ViewBag.VenueId" class="form-select">
+                <option value="">-- Select Venue (optional) --</option>
+            </select>
+        </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
+        <div class="form-section-title mt-4">Image</div>
+        <div class="mb-3">
+            <label asp-for="ImageUrl" class="form-label">Image URL</label>
+            <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Or Upload Image</label>
+            <input type="file" name="imageFile" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-eventease-primary">Create</button>
             <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

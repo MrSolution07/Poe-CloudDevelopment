@@ -2,37 +2,39 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center mb-5">
-    <h1 class="display-4 fw-bold">EventEase</h1>
-    <p class="lead text-muted">Your all-in-one venue booking management platform.</p>
-    <hr class="my-4" />
+<div class="hero-section rounded-3 p-5 mb-5 text-center" style="background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 50%, #5eead4 100%); border: 1px solid #99f6e4;">
+    <h1 class="display-4 fw-bold mb-3" style="color: #0f766e;">EventEase</h1>
+    <p class="lead mb-0" style="color: #115e59;">Your all-in-one venue booking management platform for booking specialists.</p>
 </div>
 
-<div class="row text-center">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h3 class="card-title">Venues</h3>
-                <p class="card-text">Browse, add, and manage event venues with images, capacity, and availability info.</p>
-                <a asp-controller="Venues" asp-action="Index" class="btn btn-outline-primary">Manage Venues</a>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card card-eventease h-100">
+            <div class="card-body p-4">
+                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#127970;</div>
+                <h3 class="card-title h5 fw-semibold">Venues</h3>
+                <p class="card-text text-muted">Browse, add, and manage event venues with images, capacity, and availability info.</p>
+                <a asp-controller="Venues" asp-action="Index" class="btn btn-eventease-primary">Manage Venues</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h3 class="card-title">Events</h3>
-                <p class="card-text">Create and organise events, assign venues, and categorise by event type.</p>
-                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary">Manage Events</a>
+    <div class="col-md-4">
+        <div class="card card-eventease h-100">
+            <div class="card-body p-4">
+                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#128197;</div>
+                <h3 class="card-title h5 fw-semibold">Events</h3>
+                <p class="card-text text-muted">Create and organise events, assign venues, and categorise by event type.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-eventease-primary">Manage Events</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h3 class="card-title">Bookings</h3>
-                <p class="card-text">Make, search, and filter bookings. Prevent double bookings and manage scheduling.</p>
-                <a asp-controller="Bookings" asp-action="Overview" class="btn btn-outline-primary">Booking Overview</a>
+    <div class="col-md-4">
+        <div class="card card-eventease h-100">
+            <div class="card-body p-4">
+                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#128203;</div>
+                <h3 class="card-title h5 fw-semibold">Bookings</h3>
+                <p class="card-text text-muted">Make, search, and filter bookings. Prevent double bookings and manage scheduling.</p>
+                <a asp-controller="Bookings" asp-action="Overview" class="btn btn-eventease-primary">Booking Overview</a>
             </div>
         </div>
     </div>

@@ -1,0 +1,29 @@
+@*
+    Reusable breadcrumb partial.
+    Uses ViewData["Breadcrumbs"] as List<(string Text, string? Url)>
+*@
+@{
+    var breadcrumbs = ViewData["Breadcrumbs"] as List<(string Text, string? Url)>;
+}
+@if (breadcrumbs != null && breadcrumbs.Any())
+{
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb breadcrumb-eventease">
+            @for (var i = 0; i < breadcrumbs.Count; i++)
+            {
+                var (text, url) = breadcrumbs[i];
+                var isLast = i == breadcrumbs.Count - 1;
+                <li class="breadcrumb-item @(isLast ? "active" : "")" @(isLast ? "aria-current=\"page\"" : "")>
+                    @if (isLast || string.IsNullOrEmpty(url))
+                    {
+                        @text
+                    }
+                    else
+                    {
+                        <a href="@url" class="text-decoration-none">@text</a>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+}

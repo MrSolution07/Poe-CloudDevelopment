@@ -2,38 +2,45 @@
 
 @{
     ViewData["Title"] = "Venue Details";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Venues", Url.Action("Index")), (Model.VenueName, null) };
 }
 
-<h2>Venue Details</h2>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        @if (!string.IsNullOrEmpty(Model.ImageUrl))
-        {
-            <img src="@Model.ImageUrl" alt="@Model.VenueName" class="img-fluid rounded mb-3" style="max-height: 300px;" />
-        }
-        <dl class="row">
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.VenueName)</dt>
-            <dd class="col-sm-8">@Model.VenueName</dd>
+<div class="card card-eventease">
+    <div class="row g-0">
+        <div class="col-md-5">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.VenueName" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="img-placeholder rounded-start" style="height: 250px;">&#127970;</div>
+            }
+        </div>
+        <div class="col-md-7">
+            <div class="card-body p-4">
+                <h2 class="card-title fw-semibold mb-3">@Model.VenueName</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">@Html.DisplayNameFor(m => m.Location)</dt>
+                    <dd class="col-sm-8">@Model.Location</dd>
 
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Location)</dt>
-            <dd class="col-sm-8">@Model.Location</dd>
+                    <dt class="col-sm-4 text-muted">@Html.DisplayNameFor(m => m.Capacity)</dt>
+                    <dd class="col-sm-8">@Model.Capacity</dd>
 
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Capacity)</dt>
-            <dd class="col-sm-8">@Model.Capacity</dd>
-
-            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.IsAvailable)</dt>
-            <dd class="col-sm-8">
-                <span class="badge @(Model.IsAvailable ? "bg-success" : "bg-secondary")">
-                    @(Model.IsAvailable ? "Available" : "Unavailable")
-                </span>
-            </dd>
-        </dl>
+                    <dt class="col-sm-4 text-muted">@Html.DisplayNameFor(m => m.IsAvailable)</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.IsAvailable ? "badge-eventease-available" : "badge-eventease-unavailable")">
+                            @(Model.IsAvailable ? "Available" : "Unavailable")
+                        </span>
+                    </dd>
+                </dl>
+                <div class="mt-4 d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.VenueId" class="btn btn-outline-warning">Edit</a>
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.VenueId" class="btn btn-warning">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

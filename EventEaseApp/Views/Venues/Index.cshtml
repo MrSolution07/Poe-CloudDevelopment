@@ -2,39 +2,56 @@
 
 @{
     ViewData["Title"] = "Venues";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Venues", null) };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Venues</h2>
-    <a asp-action="Create" class="btn btn-primary">Add New Venue</a>
+<partial name="_Breadcrumb" />
+
+<div class="page-header">
+    <h1 class="page-title">Venues</h1>
+    <a asp-action="Create" class="btn btn-eventease-primary">Add New Venue</a>
 </div>
 
-<div class="row">
-    @foreach (var venue in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                @if (!string.IsNullOrEmpty(venue.ImageUrl))
-                {
-                    <img src="@venue.ImageUrl" class="card-img-top" alt="@venue.VenueName"
-                         style="height: 200px; object-fit: cover;" />
-                }
-                <div class="card-body">
-                    <h5 class="card-title">@venue.VenueName</h5>
-                    <p class="card-text text-muted">@venue.Location</p>
-                    <p class="card-text">
-                        <strong>Capacity:</strong> @venue.Capacity
-                        <span class="badge @(venue.IsAvailable ? "bg-success" : "bg-secondary") ms-2">
-                            @(venue.IsAvailable ? "Available" : "Unavailable")
-                        </span>
-                    </p>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <a asp-action="Details" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-primary">Details</a>
-                    <a asp-action="Edit" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-warning">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-danger">Delete</a>
+@if (Model.Any())
+{
+    <div class="row g-4">
+        @foreach (var venue in Model)
+        {
+            <div class="col-md-4">
+                <div class="card card-eventease h-100">
+                    @if (!string.IsNullOrEmpty(venue.ImageUrl))
+                    {
+                        <img src="@venue.ImageUrl" class="card-img-top" alt="@venue.VenueName" style="height: 200px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="img-placeholder">&#127970;</div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold">@venue.VenueName</h5>
+                        <p class="card-text text-muted small">@venue.Location</p>
+                        <p class="card-text mb-2">
+                            <strong>Capacity:</strong> @venue.Capacity
+                            <span class="badge @(venue.IsAvailable ? "badge-eventease-available" : "badge-eventease-unavailable") ms-2">
+                                @(venue.IsAvailable ? "Available" : "Unavailable")
+                            </span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
+                        <a asp-action="Details" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-eventease">Details</a>
+                        <a asp-action="Edit" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-warning">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
+else
+{
+    ViewData["EmptyStateTitle"] = "No venues yet";
+    ViewData["EmptyStateMessage"] = "Get started by adding your first venue.";
+    ViewData["EmptyStateActionText"] = "Add Venue";
+    ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    <partial name="_EmptyState" />
+}

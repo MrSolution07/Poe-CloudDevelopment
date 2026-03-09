@@ -2,32 +2,34 @@
 
 @{
     ViewData["Title"] = "Delete Booking";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Bookings", Url.Action("Index")), ("Delete", null) };
 }
 
-<h2>Delete Booking</h2>
-<h4 class="text-danger">Are you sure you want to delete this booking?</h4>
-<hr />
+<partial name="_Breadcrumb" />
 
-<div class="row">
-    <div class="col-md-6">
-        <dl class="row">
-            <dt class="col-sm-4">Booking ID</dt>
-            <dd class="col-sm-8">@Model.BookingId</dd>
+<div class="delete-warning mb-4">
+    <h2 class="h4 fw-semibold text-danger mb-3">Delete Booking</h2>
+    <p class="mb-0">Are you sure you want to delete this booking? This action cannot be undone.</p>
+</div>
 
-            <dt class="col-sm-4">Event</dt>
-            <dd class="col-sm-8">@Model.Event?.EventName</dd>
+<div class="form-card">
+    <dl class="row mb-0">
+        <dt class="col-sm-3 text-muted">Booking ID</dt>
+        <dd class="col-sm-9">@Model.BookingId</dd>
 
-            <dt class="col-sm-4">Venue</dt>
-            <dd class="col-sm-8">@Model.Venue?.VenueName</dd>
+        <dt class="col-sm-3 text-muted">Event</dt>
+        <dd class="col-sm-9">@Model.Event?.EventName</dd>
 
-            <dt class="col-sm-4">Booking Date</dt>
-            <dd class="col-sm-8">@Model.BookingDate.ToString("dd MMM yyyy")</dd>
-        </dl>
+        <dt class="col-sm-3 text-muted">Venue</dt>
+        <dd class="col-sm-9">@Model.Venue?.VenueName</dd>
 
-        <form asp-action="Delete">
-            <input type="hidden" asp-for="BookingId" />
-            <button type="submit" class="btn btn-danger">Delete</button>
-            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-        </form>
-    </div>
+        <dt class="col-sm-3 text-muted">Booking Date</dt>
+        <dd class="col-sm-9">@Model.BookingDate.ToString("dd MMM yyyy")</dd>
+    </dl>
+
+    <form asp-action="Delete" class="mt-4">
+        <input type="hidden" asp-for="BookingId" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
 </div>

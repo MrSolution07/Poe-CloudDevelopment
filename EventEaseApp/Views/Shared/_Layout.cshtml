@@ -4,36 +4,42 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EventEase</title>
-    <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EventEaseApp.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark navbar-eventease border-0 mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">EventEase</a>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">EventEase</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        @{
+                            var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+                            var action = ViewContext.RouteData.Values["action"]?.ToString();
+                        }
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(controller == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Venues" asp-action="Index">Venues</a>
+                            <a class="nav-link @(controller == "Venues" ? "active" : "")" asp-controller="Venues" asp-action="Index">Venues</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            <a class="nav-link @(controller == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">Events</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Bookings" asp-action="Index">Bookings</a>
+                            <a class="nav-link @(controller == "Bookings" && action != "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Index">Bookings</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Bookings" asp-action="Overview">Booking Overview</a>
+                            <a class="nav-link @(controller == "Bookings" && action == "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Overview">Booking Overview</a>
                         </li>
                     </ul>
                 </div>
@@ -43,14 +49,14 @@
     <div class="container">
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-eventease alert-dismissible fade show" role="alert">
                 @TempData["SuccessMessage"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
         @if (TempData["ErrorMessage"] != null)
         {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-eventease alert-dismissible fade show" role="alert">
                 @TempData["ErrorMessage"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -60,9 +66,15 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer footer-eventease text-muted">
         <div class="container">
-            &copy; 2026 - EventEase - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>&copy; 2026 EventEase</span>
+                <div>
+                    <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted me-3">Privacy</a>
+                    <span class="azure-badge">Powered by Microsoft Azure</span>
+                </div>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

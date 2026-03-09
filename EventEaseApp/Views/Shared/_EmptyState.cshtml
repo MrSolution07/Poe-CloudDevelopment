@@ -1,0 +1,20 @@
+@*
+    Reusable empty state partial.
+    Parameters: Title, Message, ActionText, ActionUrl
+*@
+@{
+    var title = ViewData["EmptyStateTitle"] as string ?? "No items yet";
+    var message = ViewData["EmptyStateMessage"] as string ?? "Get started by adding your first item.";
+    var actionText = ViewData["EmptyStateActionText"] as string;
+    var actionUrl = ViewData["EmptyStateActionUrl"] as string;
+}
+
+<div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#128203;</div>
+    <h4>@title</h4>
+    <p>@message</p>
+    @if (!string.IsNullOrEmpty(actionText) && !string.IsNullOrEmpty(actionUrl))
+    {
+        <a href="@actionUrl" class="btn btn-eventease-primary">@actionText</a>
+    }
+</div>
