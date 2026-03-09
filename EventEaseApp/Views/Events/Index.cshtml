@@ -1,0 +1,46 @@
+@model IEnumerable<EventEaseApp.Models.Event>
+
+@{
+    ViewData["Title"] = "Events";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Events</h2>
+    <a asp-action="Create" class="btn btn-primary">Add New Event</a>
+</div>
+
+<div class="row">
+    @foreach (var ev in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                @if (!string.IsNullOrEmpty(ev.ImageUrl))
+                {
+                    <img src="@ev.ImageUrl" class="card-img-top" alt="@ev.EventName"
+                         style="height: 200px; object-fit: cover;" />
+                }
+                <div class="card-body">
+                    <h5 class="card-title">@ev.EventName</h5>
+                    <p class="card-text text-muted">@ev.EventDate.ToString("dd MMM yyyy")</p>
+                    @if (ev.EventType != null)
+                    {
+                        <span class="badge bg-info">@ev.EventType.Name</span>
+                    }
+                    @if (ev.Venue != null)
+                    {
+                        <p class="card-text mt-2"><small>Venue: @ev.Venue.VenueName</small></p>
+                    }
+                    @if (!string.IsNullOrEmpty(ev.Description))
+                    {
+                        <p class="card-text">@ev.Description</p>
+                    }
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-primary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

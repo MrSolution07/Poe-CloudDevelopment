@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">EventEase</h1>
+    <p class="lead text-muted">Your all-in-one venue booking management platform.</p>
+    <hr class="my-4" />
+</div>
+
+<div class="row text-center">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h3 class="card-title">Venues</h3>
+                <p class="card-text">Browse, add, and manage event venues with images, capacity, and availability info.</p>
+                <a asp-controller="Venues" asp-action="Index" class="btn btn-outline-primary">Manage Venues</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h3 class="card-title">Events</h3>
+                <p class="card-text">Create and organise events, assign venues, and categorise by event type.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary">Manage Events</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h3 class="card-title">Bookings</h3>
+                <p class="card-text">Make, search, and filter bookings. Prevent double bookings and manage scheduling.</p>
+                <a asp-controller="Bookings" asp-action="Overview" class="btn btn-outline-primary">Booking Overview</a>
+            </div>
+        </div>
+    </div>
+</div>

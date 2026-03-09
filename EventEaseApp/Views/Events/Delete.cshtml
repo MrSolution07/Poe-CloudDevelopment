@@ -1,0 +1,33 @@
+@model EventEaseApp.Models.Event
+
+@{
+    ViewData["Title"] = "Delete Event";
+}
+
+<h2>Delete Event</h2>
+<h4 class="text-danger">Are you sure you want to delete this event?</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.EventName)</dt>
+            <dd class="col-sm-8">@Model.EventName</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(m => m.EventDate)</dt>
+            <dd class="col-sm-8">@Model.EventDate.ToString("dd MMM yyyy HH:mm")</dd>
+
+            <dt class="col-sm-4">Venue</dt>
+            <dd class="col-sm-8">@(Model.Venue?.VenueName ?? "Not assigned")</dd>
+
+            <dt class="col-sm-4">Event Type</dt>
+            <dd class="col-sm-8">@(Model.EventType?.Name ?? "N/A")</dd>
+        </dl>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="EventId" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+</div>

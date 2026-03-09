@@ -1,0 +1,58 @@
+@model EventEaseApp.Models.Event
+
+@{
+    ViewData["Title"] = "Create Event";
+}
+
+<h2>Create Event</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="EventName" class="form-label"></label>
+                <input asp-for="EventName" class="form-control" />
+                <span asp-validation-for="EventName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="EventDate" class="form-label"></label>
+                <input asp-for="EventDate" class="form-control" type="datetime-local" />
+                <span asp-validation-for="EventDate" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label asp-for="VenueId" class="form-label">Venue</label>
+                <select asp-for="VenueId" asp-items="@ViewBag.VenueId" class="form-select">
+                    <option value="">-- Select Venue (optional) --</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="EventTypeId" class="form-label">Event Type</label>
+                <select asp-for="EventTypeId" asp-items="@ViewBag.EventTypeId" class="form-select">
+                    <option value="">-- Select Event Type --</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ImageUrl" class="form-label">Image URL (placeholder)</label>
+                <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Or Upload Image</label>
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
