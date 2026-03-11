@@ -52,11 +52,16 @@ public class VenuesController : Controller
         try
         {
             if (imageFile != null && imageFile.Length > 0)
-                venue.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+            {
+                if (_blobService.IsConfigured)
+                    venue.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                else
+                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
+            }
 
             _context.Add(venue);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Venue created successfully.";
+            TempData["SuccessMessage"] ??= "Venue created successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception)
@@ -89,15 +94,22 @@ public class VenuesController : Controller
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                if (!string.IsNullOrEmpty(venue.ImageUrl))
-                    await _blobService.DeleteImageAsync(venue.ImageUrl, _containerName);
+                if (_blobService.IsConfigured)
+                {
+                    if (!string.IsNullOrEmpty(venue.ImageUrl))
+                        await _blobService.DeleteImageAsync(venue.ImageUrl, _containerName);
 
-                venue.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                    venue.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
+                }
             }
 
             _context.Update(venue);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Venue updated successfully.";
+            TempData["SuccessMessage"] ??= "Venue updated successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateConcurrencyException)

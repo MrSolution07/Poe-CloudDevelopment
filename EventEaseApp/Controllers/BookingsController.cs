@@ -55,6 +55,7 @@ public class BookingsController : Controller
                         EventName = e.EventName,
                         EventDate = e.EventDate,
                         Description = e.Description,
+                        EventImageUrl = e.ImageUrl,
                         EventTypeName = et != null ? et.Name : null,
                         VenueId = v.VenueId,
                         VenueName = v.VenueName,

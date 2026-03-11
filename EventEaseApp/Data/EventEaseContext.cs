@@ -134,6 +134,16 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueId = 2,
                 EventTypeId = 2,
                 ImageUrl = "https://images.unsplash.com/photo-1519741497674-611481863552?w=600"
+            },
+            new Event
+            {
+                EventId = 3,
+                EventName = "Jazz Night",
+                EventDate = new DateTime(2026, 7, 10),
+                Description = "An evening of live jazz music under the stars on the rooftop terrace.",
+                VenueId = 3,
+                EventTypeId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=600"
             }
         );
 
@@ -144,6 +154,13 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 EventId = 1,
                 VenueId = 1,
                 BookingDate = new DateTime(2026, 6, 15)
+            },
+            new Booking
+            {
+                BookingId = 2,
+                EventId = 2,
+                VenueId = 2,
+                BookingDate = new DateTime(2026, 9, 20)
             }
         );
     }

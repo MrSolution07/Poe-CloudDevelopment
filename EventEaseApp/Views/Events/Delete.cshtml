@@ -27,9 +27,10 @@
         <dd class="col-sm-9">@(Model.EventType?.Name ?? "N/A")</dd>
     </dl>
 
-    <form asp-action="Delete" class="mt-4">
+    <form asp-action="Delete" method="post" class="mt-4">
+        @Html.AntiForgeryToken()
         <input type="hidden" asp-for="EventId" />
-        <button type="submit" class="btn btn-danger">Delete</button>
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
         <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
     </form>
 </div>

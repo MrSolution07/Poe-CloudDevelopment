@@ -63,11 +63,16 @@ public class EventsController : Controller
         try
         {
             if (imageFile != null && imageFile.Length > 0)
-                ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+            {
+                if (_blobService.IsConfigured)
+                    ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                else
+                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
+            }
 
             _context.Add(ev);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Event created successfully.";
+            TempData["SuccessMessage"] ??= "Event created successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception)
@@ -105,15 +110,22 @@ public class EventsController : Controller
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                if (!string.IsNullOrEmpty(ev.ImageUrl))
-                    await _blobService.DeleteImageAsync(ev.ImageUrl, _containerName);
+                if (_blobService.IsConfigured)
+                {
+                    if (!string.IsNullOrEmpty(ev.ImageUrl))
+                        await _blobService.DeleteImageAsync(ev.ImageUrl, _containerName);
 
-                ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                    ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
+                }
             }
 
             _context.Update(ev);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Event updated successfully.";
+            TempData["SuccessMessage"] ??= "Event updated successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateConcurrencyException)

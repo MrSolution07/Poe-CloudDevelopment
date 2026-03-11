@@ -81,7 +81,8 @@
         <table class="table table-eventease table-striped mb-0">
             <thead>
                 <tr>
-                    <th>Booking ID</th>
+                    <th>ID</th>
+                    <th></th>
                     <th>Event</th>
                     <th>Event Type</th>
                     <th>Event Date</th>
@@ -96,12 +97,35 @@
                 @foreach (var item in Model.Results)
                 {
                     <tr>
-                        <td>@item.BookingId</td>
+                        <td><strong>@item.BookingId</strong></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.EventImageUrl))
+                            {
+                                <img src="@item.EventImageUrl" alt="@item.EventName" class="overview-thumb" />
+                            }
+                            else if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="@item.VenueName" class="overview-thumb" />
+                            }
+                            else
+                            {
+                                <div class="overview-thumb-placeholder">&#128197;</div>
+                            }
+                        </td>
                         <td>@item.EventName</td>
-                        <td>@(item.EventTypeName ?? "N/A")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.EventTypeName))
+                            {
+                                <span class="badge bg-info">@item.EventTypeName</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </td>
                         <td>@item.EventDate.ToString("dd MMM yyyy")</td>
                         <td>@item.VenueName</td>
-                        <td>@item.Location</td>
+                        <td class="text-muted small">@item.Location</td>
                         <td>@item.Capacity</td>
                         <td>
                             <span class="badge @(item.IsAvailable ? "badge-eventease-available" : "badge-eventease-unavailable")">
