@@ -9,7 +9,10 @@
 
 <div class="page-header">
     <h1 class="page-title">Venues</h1>
-    <a asp-action="Create" class="btn btn-eventease-primary">Add New Venue</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-eventease-primary">Add New Venue</a>
+    }
 </div>
 
 @if (Model.Any())
@@ -25,7 +28,7 @@
                     }
                     else
                     {
-                        <div class="img-placeholder">&#127970;</div>
+                        <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600" class="card-img-top" alt="Venue placeholder" style="height: 200px; object-fit: cover;" />
                     }
                     <div class="card-body">
                         <h5 class="card-title fw-semibold">@venue.VenueName</h5>
@@ -39,8 +42,11 @@
                     </div>
                     <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
                         <a asp-action="Details" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-eventease">Details</a>
-                        <a asp-action="Edit" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-warning">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-danger">Delete</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-danger">Delete</a>
+                        }
                     </div>
                 </div>
             </div>
@@ -50,8 +56,11 @@
 else
 {
     ViewData["EmptyStateTitle"] = "No venues yet";
-    ViewData["EmptyStateMessage"] = "Get started by adding your first venue.";
-    ViewData["EmptyStateActionText"] = "Add Venue";
-    ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    ViewData["EmptyStateMessage"] = User.IsInRole("Admin") ? "Get started by adding your first venue." : "Check back soon for available venues.";
+    if (User.IsInRole("Admin"))
+    {
+        ViewData["EmptyStateActionText"] = "Add Venue";
+        ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    }
     <partial name="_EmptyState" />
 }

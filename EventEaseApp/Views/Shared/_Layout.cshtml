@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EventEaseApp.styles.css" asp-append-version="true" />
 </head>
@@ -26,7 +27,7 @@
                         var action = ViewContext.RouteData.Values["action"]?.ToString();
                     }
                     <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(controller == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
@@ -43,11 +44,23 @@
                             <li class="nav-item">
                                 <a class="nav-link @(controller == "Bookings" && action == "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Overview">Booking Overview</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(controller == "BookingRequests" ? "active" : "")" asp-controller="BookingRequests" asp-action="Index">Booking Requests</a>
+                            </li>
                         }
                         else
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(controller == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(controller == "Venues" ? "active" : "")" asp-controller="Venues" asp-action="Index">Venues</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(controller == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(controller == "BookingRequests" && action == "Create" ? "active" : "")" asp-controller="BookingRequests" asp-action="Create">Request Booking</a>
                             </li>
                         }
                     </ul>
@@ -68,9 +81,6 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Login">Sign In</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>
@@ -104,7 +114,7 @@
                 <span>&copy; 2026 EventEase</span>
                 <div>
                     <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted me-3">Privacy</a>
-                    <span class="azure-badge">Powered by Microsoft Azure</span>
+                    <span class="azure-badge">Powered by CE BULABULA</span>
                 </div>
             </div>
         </div>

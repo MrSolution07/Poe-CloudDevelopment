@@ -13,6 +13,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
     public DbSet<Event> Events { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<EventType> EventTypes { get; set; }
+    public DbSet<BookingRequest> BookingRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +67,21 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasKey(et => et.EventTypeId);
             entity.Property(et => et.Name).IsRequired().HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<BookingRequest>(entity =>
+        {
+            entity.HasKey(br => br.BookingRequestId);
+            entity.Property(br => br.CustomerName).IsRequired().HasMaxLength(200);
+            entity.Property(br => br.Email).IsRequired().HasMaxLength(200);
+            entity.Property(br => br.Phone).HasMaxLength(20);
+            entity.Property(br => br.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(br => br.Status).HasMaxLength(20).HasDefaultValue("Pending");
+
+            entity.HasOne(br => br.PreferredVenue)
+                  .WithMany()
+                  .HasForeignKey(br => br.PreferredVenueId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         SeedData(modelBuilder);

@@ -16,7 +16,7 @@
             }
             else
             {
-                <div class="img-placeholder rounded-start" style="height: 250px;">&#128197;</div>
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" alt="Event placeholder" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
             }
         </div>
         <div class="col-md-7">
@@ -37,7 +37,10 @@
                     <dd class="col-sm-8">@(Model.Venue?.VenueName ?? "Not assigned")</dd>
                 </dl>
                 <div class="mt-4 d-flex gap-2">
-                    <a asp-action="Edit" asp-route-id="@Model.EventId" class="btn btn-outline-warning">Edit</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.EventId" class="btn btn-outline-warning">Edit</a>
+                    }
                     <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                 </div>
             </div>

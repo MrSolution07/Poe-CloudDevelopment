@@ -1,41 +1,88 @@
 @{
     ViewData["Title"] = "Home";
+    var venues = ViewBag.FeaturedVenues as List<EventEaseApp.Models.Venue> ?? new();
+    var events = ViewBag.UpcomingEvents as List<EventEaseApp.Models.Event> ?? new();
+    var defaultVenueImg = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600";
+    var defaultEventImg = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600";
 }
 
-<div class="hero-section rounded-3 p-5 mb-5 text-center" style="background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 50%, #5eead4 100%); border: 1px solid #99f6e4;">
-    <h1 class="display-4 fw-bold mb-3" style="color: #0f766e;">EventEase</h1>
-    <p class="lead mb-0" style="color: #115e59;">Your all-in-one venue booking management platform for booking specialists.</p>
-</div>
+<section class="landing-hero rounded-3 p-5 mb-5 text-center">
+    <h1 class="display-4 fw-bold mb-3">Seamless Venue Booking for Every Occasion</h1>
+    <p class="lead mb-4">EventEase connects you with premier event venues across South Africa. Browse available spaces, explore upcoming events, and request a booking in minutes.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a asp-controller="Venues" asp-action="Index" class="btn btn-eventease-primary btn-lg">Browse Venues</a>
+        <a asp-controller="BookingRequests" asp-action="Create" class="btn btn-outline-light btn-lg">Request a Booking</a>
+    </div>
+</section>
 
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card card-eventease h-100">
-            <div class="card-body p-4">
-                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#127970;</div>
-                <h3 class="card-title h5 fw-semibold">Venues</h3>
-                <p class="card-text text-muted">Browse, add, and manage event venues with images, capacity, and availability info.</p>
-                <a asp-controller="Venues" asp-action="Index" class="btn btn-eventease-primary">Manage Venues</a>
-            </div>
+@if (venues.Any())
+{
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-semibold mb-0">Featured Venues</h2>
+            <a asp-controller="Venues" asp-action="Index" class="btn btn-sm btn-outline-eventease">View All</a>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-eventease h-100">
-            <div class="card-body p-4">
-                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#128197;</div>
-                <h3 class="card-title h5 fw-semibold">Events</h3>
-                <p class="card-text text-muted">Create and organise events, assign venues, and categorise by event type.</p>
-                <a asp-controller="Events" asp-action="Index" class="btn btn-eventease-primary">Manage Events</a>
-            </div>
+        <div class="row g-4">
+            @foreach (var venue in venues)
+            {
+                <div class="col-md-4">
+                    <div class="card card-eventease h-100">
+                        <img src="@(venue.ImageUrl ?? defaultVenueImg)" class="card-img-top" alt="@venue.VenueName" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body">
+                            <h5 class="card-title fw-semibold">@venue.VenueName</h5>
+                            <p class="card-text text-muted small">@venue.Location</p>
+                            <p class="card-text mb-0">
+                                <strong>Capacity:</strong> @venue.Capacity
+                                <span class="badge badge-eventease-available ms-2">Available</span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a asp-controller="Venues" asp-action="Details" asp-route-id="@venue.VenueId" class="btn btn-sm btn-outline-eventease">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-eventease h-100">
-            <div class="card-body p-4">
-                <div class="mb-3" style="font-size: 2.5rem; color: var(--eventease-primary);" aria-hidden="true">&#128203;</div>
-                <h3 class="card-title h5 fw-semibold">Bookings</h3>
-                <p class="card-text text-muted">Make, search, and filter bookings. Prevent double bookings and manage scheduling.</p>
-                <a asp-controller="Bookings" asp-action="Overview" class="btn btn-eventease-primary">Booking Overview</a>
-            </div>
+    </section>
+}
+
+@if (events.Any())
+{
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-semibold mb-0">Upcoming Events</h2>
+            <a asp-controller="Events" asp-action="Index" class="btn btn-sm btn-outline-eventease">View All</a>
         </div>
-    </div>
-</div>
+        <div class="row g-4">
+            @foreach (var ev in events)
+            {
+                <div class="col-md-4">
+                    <div class="card card-eventease h-100">
+                        <img src="@(ev.ImageUrl ?? defaultEventImg)" class="card-img-top" alt="@ev.EventName" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body">
+                            <h5 class="card-title fw-semibold">@ev.EventName</h5>
+                            <p class="card-text text-muted small">@ev.EventDate.ToString("dd MMM yyyy")</p>
+                            @if (ev.EventType != null)
+                            {
+                                <span class="badge bg-info mb-2">@ev.EventType.Name</span>
+                            }
+                            @if (ev.Venue != null)
+                            {
+                                <p class="card-text small mb-0"><strong>Venue:</strong> @ev.Venue.VenueName</p>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-eventease">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<section class="landing-cta rounded-3 p-5 text-center mb-4">
+    <h2 class="h3 fw-semibold mb-3">Ready to Book Your Next Event?</h2>
+    <p class="text-muted mb-4">Send us your requirements and our booking specialists will handle the rest.</p>
+    <a asp-controller="BookingRequests" asp-action="Create" class="btn btn-eventease-primary btn-lg">Request a Booking</a>
+</section>

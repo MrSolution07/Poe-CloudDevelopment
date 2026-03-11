@@ -8,7 +8,7 @@ using EventEaseApp.Services;
 
 namespace EventEaseApp.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class EventsController : Controller
 {
     private readonly EventEaseContext _context;
@@ -22,6 +22,7 @@ public class EventsController : Controller
         _containerName = config["AzureBlobStorage:EventContainerName"] ?? "event-images";
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
         var events = await _context.Events
@@ -31,6 +32,7 @@ public class EventsController : Controller
         return View(events);
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();

@@ -7,7 +7,7 @@ using EventEaseApp.Models;
 
 namespace EventEaseApp.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class BookingsController : Controller
 {
     private readonly EventEaseContext _context;

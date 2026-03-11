@@ -51,11 +51,15 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<EventEaseContext>();
     context.Database.EnsureCreated();
 
-    // Seed a default admin user for development
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    if (!await roleManager.RoleExistsAsync("Admin"))
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    if (await userManager.FindByEmailAsync("admin@eventease.co.za") == null)
+    var admin = await userManager.FindByEmailAsync("admin@eventease.co.za");
+    if (admin == null)
     {
-        var admin = new ApplicationUser
+        admin = new ApplicationUser
         {
             UserName = "admin@eventease.co.za",
             Email = "admin@eventease.co.za",
@@ -64,6 +68,9 @@ using (var scope = app.Services.CreateScope())
         };
         await userManager.CreateAsync(admin, "Admin123");
     }
+
+    if (!await userManager.IsInRoleAsync(admin, "Admin"))
+        await userManager.AddToRoleAsync(admin, "Admin");
 }
 
 if (!app.Environment.IsDevelopment())

@@ -7,7 +7,7 @@ using EventEaseApp.Models;
 
 namespace EventEaseApp.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class DashboardController : Controller
 {
     private readonly EventEaseContext _context;
@@ -32,6 +32,7 @@ public class DashboardController : Controller
             TotalBookings = await _context.Bookings.CountAsync(),
             AvailableVenues = await _context.Venues.CountAsync(v => v.IsAvailable),
             UpcomingEvents = await _context.Events.CountAsync(e => e.EventDate >= today),
+            PendingRequests = await _context.BookingRequests.CountAsync(br => br.Status == "Pending"),
             RecentBookings = await _context.Bookings
                 .Include(b => b.Event)
                 .Include(b => b.Venue)

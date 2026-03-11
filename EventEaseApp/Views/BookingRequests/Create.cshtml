@@ -1,0 +1,67 @@
+@model EventEaseApp.Models.BookingRequest
+
+@{
+    ViewData["Title"] = "Request a Booking";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Request Booking", null) };
+}
+
+<partial name="_Breadcrumb" />
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-4">
+            <h1 class="page-title">Request a Booking</h1>
+            <p class="text-muted">Fill out the form below and one of our booking specialists will get back to you.</p>
+        </div>
+
+        <div class="form-card">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="form-section-title">Your Details</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CustomerName" class="form-label"></label>
+                        <input asp-for="CustomerName" class="form-control" placeholder="e.g. John Smith" />
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="john@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" placeholder="e.g. 012 345 6789" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-section-title mt-4">Booking Preferences</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PreferredVenueId" class="form-label">Preferred Venue (optional)</label>
+                        <select asp-for="PreferredVenueId" asp-items="@ViewBag.VenueId" class="form-select">
+                            <option value="">-- No preference --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PreferredDate" class="form-label">Preferred Date (optional)</label>
+                        <input asp-for="PreferredDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Message" class="form-label"></label>
+                    <textarea asp-for="Message" class="form-control" rows="4" placeholder="Tell us about your event, expected number of guests, and any special requirements..."></textarea>
+                    <span asp-validation-for="Message" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-eventease-primary btn-lg w-100">Submit Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

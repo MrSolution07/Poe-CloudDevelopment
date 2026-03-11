@@ -1,0 +1,80 @@
+@model IEnumerable<EventEaseApp.Models.BookingRequest>
+
+@{
+    ViewData["Title"] = "Booking Requests";
+    ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Booking Requests", null) };
+    var currentStatus = ViewBag.CurrentStatus as string;
+}
+
+<partial name="_Breadcrumb" />
+
+<div class="page-header">
+    <h1 class="page-title">Booking Requests</h1>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="@Url.Action("Index")" class="btn btn-sm @(string.IsNullOrEmpty(currentStatus) ? "btn-eventease-primary" : "btn-outline-eventease")">All</a>
+    <a href="@Url.Action("Index", new { status = "Pending" })" class="btn btn-sm @(currentStatus == "Pending" ? "btn-eventease-primary" : "btn-outline-eventease")">Pending</a>
+    <a href="@Url.Action("Index", new { status = "Processed" })" class="btn btn-sm @(currentStatus == "Processed" ? "btn-eventease-primary" : "btn-outline-eventease")">Processed</a>
+</div>
+
+@if (Model.Any())
+{
+    <div class="table-responsive-card">
+        <table class="table table-eventease table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Preferred Venue</th>
+                    <th>Preferred Date</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var req in Model)
+                {
+                    <tr>
+                        <td><strong>@req.BookingRequestId</strong></td>
+                        <td>@req.CustomerName</td>
+                        <td><a href="mailto:@req.Email" class="text-decoration-none">@req.Email</a></td>
+                        <td>@(req.Phone ?? "N/A")</td>
+                        <td>@(req.PreferredVenue?.VenueName ?? "No preference")</td>
+                        <td>@(req.PreferredDate?.ToString("dd MMM yyyy") ?? "Flexible")</td>
+                        <td>
+                            @if (req.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-eventease-available">Processed</span>
+                            }
+                        </td>
+                        <td class="text-muted small">@req.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>
+                            @if (req.Status == "Pending")
+                            {
+                                <form asp-action="MarkProcessed" asp-route-id="@req.BookingRequestId" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-eventease">Mark Processed</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted mt-3 mb-0"><strong>Total:</strong> @Model.Count()</p>
+}
+else
+{
+    ViewData["EmptyStateTitle"] = "No booking requests";
+    ViewData["EmptyStateMessage"] = "No requests match the current filter.";
+    <partial name="_EmptyState" />
+}

@@ -9,7 +9,10 @@
 
 <div class="page-header">
     <h1 class="page-title">Events</h1>
-    <a asp-action="Create" class="btn btn-eventease-primary">Add New Event</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-eventease-primary">Add New Event</a>
+    }
 </div>
 
 @if (Model.Any())
@@ -25,7 +28,7 @@
                     }
                     else
                     {
-                        <div class="img-placeholder">&#128197;</div>
+                        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" class="card-img-top" alt="Event placeholder" style="height: 200px; object-fit: cover;" />
                     }
                     <div class="card-body">
                         <h5 class="card-title fw-semibold">@ev.EventName</h5>
@@ -45,8 +48,11 @@
                     </div>
                     <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
                         <a asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-eventease">Details</a>
-                        <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-warning">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@ev.EventId" class="btn btn-sm btn-outline-danger">Delete</a>
+                        }
                     </div>
                 </div>
             </div>
@@ -56,8 +62,11 @@
 else
 {
     ViewData["EmptyStateTitle"] = "No events yet";
-    ViewData["EmptyStateMessage"] = "Get started by adding your first event.";
-    ViewData["EmptyStateActionText"] = "Add Event";
-    ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    ViewData["EmptyStateMessage"] = User.IsInRole("Admin") ? "Get started by adding your first event." : "Check back soon for upcoming events.";
+    if (User.IsInRole("Admin"))
+    {
+        ViewData["EmptyStateActionText"] = "Add Event";
+        ViewData["EmptyStateActionUrl"] = Url.Action("Create");
+    }
     <partial name="_EmptyState" />
 }

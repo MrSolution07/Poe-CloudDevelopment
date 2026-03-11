@@ -7,7 +7,7 @@ using EventEaseApp.Services;
 
 namespace EventEaseApp.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class VenuesController : Controller
 {
     private readonly EventEaseContext _context;
@@ -21,12 +21,14 @@ public class VenuesController : Controller
         _containerName = config["AzureBlobStorage:VenueContainerName"] ?? "venue-images";
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
         var venues = await _context.Venues.ToListAsync();
         return View(venues);
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
