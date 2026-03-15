@@ -53,10 +53,6 @@ public class VenuesController : Controller
 
         try
         {
-            // #region agent log
-            var _logPath = "/Users/christian/Documents/GitHub/practice_college/.cursor/debug-f875ef.log";
-            System.IO.File.AppendAllText(_logPath, System.Text.Json.JsonSerializer.Serialize(new { sessionId = "f875ef", hypothesisId = "H-A/H-B", location = "VenuesController.cs:Create", message = "blob check", data = new { isConfigured = _blobService.IsConfigured, hasFile = imageFile != null, fileSize = imageFile?.Length, container = _containerName }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n");
-            // #endregion
             if (imageFile != null && imageFile.Length > 0)
             {
                 if (_blobService.IsConfigured)
@@ -70,12 +66,8 @@ public class VenuesController : Controller
             TempData["SuccessMessage"] ??= "Venue created successfully.";
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // #region agent log
-            var _logPath2 = "/Users/christian/Documents/GitHub/practice_college/.cursor/debug-f875ef.log";
-            System.IO.File.AppendAllText(_logPath2, System.Text.Json.JsonSerializer.Serialize(new { sessionId = "f875ef", hypothesisId = "H-A/H-B/H-C/H-D", location = "VenuesController.cs:catch", message = "exception caught", data = new { type = ex.GetType().Name, msg = ex.Message, inner = ex.InnerException?.Message }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n");
-            // #endregion
             TempData["ErrorMessage"] = "An error occurred while creating the venue.";
             return View(venue);
         }
