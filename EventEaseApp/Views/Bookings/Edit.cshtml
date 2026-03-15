@@ -31,7 +31,7 @@
         </div>
         <div class="mb-4">
             <label asp-for="BookingDate" class="form-label"></label>
-            <input asp-for="BookingDate" class="form-control" type="date" />
+            <input asp-for="BookingDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             <span asp-validation-for="BookingDate" class="text-danger"></span>
         </div>
 

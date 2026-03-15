@@ -32,7 +32,7 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  margin-bottom: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--eventease-text);
   background-color: var(--eventease-surface);
@@ -124,6 +124,10 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--eventease-primary-light);
   border-color: var(--eventease-primary);
   color: var(--eventease-primary-hover);
+}
+
+.btn {
+  white-space: nowrap;
 }
 
 .btn:focus, .btn:active:focus, .form-control:focus, .form-check-input:focus {
@@ -226,8 +230,9 @@ h1, h2, h3, h4, h5, h6 {
 /* 11. Footer */
 .footer-eventease {
   background-color: var(--eventease-surface-alt);
-  padding: 1.25rem 0;
-  margin-top: 3rem;
+  padding: 0.625rem 0;
+  margin-top: 2rem;
+  font-size: 0.8125rem;
 }
 
 .footer-eventease .azure-badge {
@@ -273,17 +278,15 @@ h1, h2, h3, h4, h5, h6 {
   background: white;
   border-radius: 0.75rem;
   box-shadow: var(--eventease-card-shadow);
-  padding: 1.5rem;
+  padding: 2rem;
   border: 1px solid var(--eventease-border);
+  max-width: 720px;
 }
 
-.form-card .form-section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--eventease-text);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--eventease-border);
+@media (min-width: 992px) {
+  .form-card {
+    padding: 2.5rem;
+  }
 }
 
 /* 15. Delete confirmation */
@@ -291,11 +294,13 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  max-width: 720px;
 }
 
 .delete-warning p {
   color: #7f1d1d;
+  font-size: 0.9rem;
 }
 
 /* 16. Responsive table */

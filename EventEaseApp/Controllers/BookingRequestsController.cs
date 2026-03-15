@@ -53,6 +53,15 @@ public class BookingRequestsController : Controller
             return View(request);
         }
 
+        if (request.PreferredDate.HasValue && request.PreferredDate.Value.Date < DateTime.Today)
+        {
+            TempData["ErrorMessage"] = "Preferred date cannot be in the past. Please select today or a future date.";
+            ViewBag.VenueId = new SelectList(
+                await _context.Venues.Where(v => v.IsAvailable).ToListAsync(),
+                "VenueId", "VenueName", request.PreferredVenueId);
+            return View(request);
+        }
+
         try
         {
             request.Status = "Pending";

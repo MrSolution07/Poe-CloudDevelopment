@@ -62,6 +62,13 @@ public class EventsController : Controller
             return View(ev);
         }
 
+        if (ev.EventDate < DateTime.Now)
+        {
+            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select a future date and time.";
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+
         try
         {
             if (imageFile != null && imageFile.Length > 0)
@@ -104,6 +111,13 @@ public class EventsController : Controller
 
         if (!ModelState.IsValid)
         {
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+
+        if (ev.EventDate < DateTime.Now)
+        {
+            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select a future date and time.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }

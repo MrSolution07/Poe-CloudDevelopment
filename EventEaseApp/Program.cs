@@ -6,15 +6,29 @@ using EventEaseApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load optional local overrides (e.g. Azure connection string) — appsettings.Development.local.json is gitignored
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
+
 builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (!string.IsNullOrEmpty(connectionString) &&
-    connectionString != "Server=(localdb)\\mssqllocaldb;Database=EventEaseDB;Trusted_Connection=True;MultipleActiveResultSets=true")
+// Use Azure SQL (or any real SQL Server) when a connection string pointing to a SQL Server host is present.
+// Fall back to InMemory for local development without a database configured.
+bool useRealDatabase = !string.IsNullOrWhiteSpace(connectionString) &&
+    (connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase) ||
+     connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) ||
+     connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
+     !connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase));
+
+if (useRealDatabase)
 {
     builder.Services.AddDbContext<EventEaseContext>(options =>
-        options.UseSqlServer(connectionString));
+        options.UseSqlServer(connectionString, sqlOptions =>
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null)));
 }
 else
 {

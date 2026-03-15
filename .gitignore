@@ -23,3 +23,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+## Local config overrides (do not commit secrets)
+**/appsettings.*.local.json
+
+## Deployment artifacts
+publish/
+deploy.zip
+
+docs/
+.cursor/

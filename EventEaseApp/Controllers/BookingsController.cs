@@ -89,12 +89,12 @@ public class BookingsController : Controller
             query = query.Where(b => eventIds.Contains(b.EventId));
         }
 
-        // Filter by date range
+        // Filter by date range on EventDate (the date the event takes place)
         if (model.DateFrom.HasValue)
-            query = query.Where(b => b.BookingDate >= model.DateFrom.Value);
+            query = query.Where(b => b.EventDate >= model.DateFrom.Value);
 
         if (model.DateTo.HasValue)
-            query = query.Where(b => b.BookingDate <= model.DateTo.Value);
+            query = query.Where(b => b.EventDate <= model.DateTo.Value);
 
         // Filter by venue availability
         if (model.IsAvailable.HasValue)
@@ -122,7 +122,21 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        // Prevent double booking: same venue on same date
+        if (booking.BookingDate.Date < DateTime.Today)
+        {
+            TempData["ErrorMessage"] = "Booking date cannot be in the past. Please select today or a future date.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        var venue = await _context.Venues.FindAsync(booking.VenueId);
+        if (venue != null && !venue.IsAvailable)
+        {
+            TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
         bool doubleBooked = await _context.Bookings.AnyAsync(b =>
             b.VenueId == booking.VenueId &&
             b.BookingDate.Date == booking.BookingDate.Date);
@@ -172,7 +186,21 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        // Prevent double booking on edit (exclude current booking)
+        if (booking.BookingDate.Date < DateTime.Today)
+        {
+            TempData["ErrorMessage"] = "Booking date cannot be in the past. Please select today or a future date.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        var venue = await _context.Venues.FindAsync(booking.VenueId);
+        if (venue != null && !venue.IsAvailable)
+        {
+            TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
         bool doubleBooked = await _context.Bookings.AnyAsync(b =>
             b.VenueId == booking.VenueId &&
             b.BookingDate.Date == booking.BookingDate.Date &&
@@ -245,6 +273,6 @@ public class BookingsController : Controller
         ViewBag.EventId = new SelectList(
             await _context.Events.ToListAsync(), "EventId", "EventName", selectedEventId);
         ViewBag.VenueId = new SelectList(
-            await _context.Venues.ToListAsync(), "VenueId", "VenueName", selectedVenueId);
+            await _context.Venues.Where(v => v.IsAvailable).ToListAsync(), "VenueId", "VenueName", selectedVenueId);
     }
 }

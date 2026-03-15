@@ -30,7 +30,17 @@ public class BlobStorageService : IBlobStorageService
                 "Azure Blob Storage is not configured. Please set AzureBlobStorage:ConnectionString in appsettings.json.");
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-        await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+        try
+        {
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+        }
+        catch (Azure.RequestFailedException ex) when (ex.ErrorCode == "PublicAccessNotPermitted")
+        {
+            // Storage account has public access disabled at account level.
+            // Create as private container — enable "Allow Blob public access" in Azure Portal
+            // on the storage account to make images publicly viewable via direct URL.
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
+        }
 
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var blobClient = containerClient.GetBlobClient(fileName);
