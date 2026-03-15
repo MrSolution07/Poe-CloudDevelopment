@@ -25,6 +25,9 @@ public class VenuesController : Controller
     public async Task<IActionResult> Index()
     {
         var venues = await _context.Venues.ToListAsync();
+        // #region agent log H-C/H-D
+        Console.Error.WriteLine("[DBG-f875ef][H-C] Index: count=" + venues.Count + " isAdmin=" + User.IsInRole("Admin") + " ids=" + string.Join(",", venues.Select(v => v.VenueId + ":" + v.VenueName + ":hasImg=" + !string.IsNullOrEmpty(v.ImageUrl))));
+        // #endregion
         return View(venues);
     }
 
@@ -53,6 +56,9 @@ public class VenuesController : Controller
 
         try
         {
+            // #region agent log H-A/H-B
+            Console.Error.WriteLine("[DBG-f875ef][H-A] Create: imageFile=" + (imageFile == null ? "null" : imageFile.FileName + ":" + imageFile.Length) + " blobConfigured=" + _blobService.IsConfigured);
+            // #endregion
             if (imageFile != null && imageFile.Length > 0)
             {
                 if (_blobService.IsConfigured)
@@ -66,9 +72,12 @@ public class VenuesController : Controller
             TempData["SuccessMessage"] ??= "Venue created successfully.";
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            TempData["ErrorMessage"] = "An error occurred while creating the venue.";
+            // #region agent log H-A/H-B
+            Console.Error.WriteLine("[DBG-f875ef][H-A] Create caught: type=" + ex.GetType().Name + " msg=" + ex.Message + " inner=" + ex.InnerException?.Message);
+            TempData["ErrorMessage"] = $"[DBG] {ex.GetType().Name}: {ex.Message.Substring(0, Math.Min(300, ex.Message.Length))}";
+            // #endregion
             return View(venue);
         }
     }

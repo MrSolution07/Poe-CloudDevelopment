@@ -18,7 +18,10 @@ public class BlobStorageService : IBlobStorageService
 
     public BlobStorageService(IConfiguration configuration)
     {
-        var connectionString = configuration["AzureBlobStorage:ConnectionString"];
+        // Support both: Connection strings (Azure Portal) and App setting AzureBlobStorage:ConnectionString
+        var connectionString = configuration["ConnectionStrings:AzureBlobStorage"]
+            ?? configuration["ConnectionStrings:BlobStorage"]
+            ?? configuration["AzureBlobStorage:ConnectionString"];
         if (!string.IsNullOrEmpty(connectionString))
             _blobServiceClient = new BlobServiceClient(connectionString);
     }
@@ -27,7 +30,7 @@ public class BlobStorageService : IBlobStorageService
     {
         if (_blobServiceClient == null)
             throw new InvalidOperationException(
-                "Azure Blob Storage is not configured. Please set AzureBlobStorage:ConnectionString in appsettings.json.");
+                "Azure Blob Storage is not configured. Set ConnectionStrings:AzureBlobStorage (or AzureBlobStorage:ConnectionString) in configuration.");
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         try
@@ -41,9 +44,20 @@ public class BlobStorageService : IBlobStorageService
             // on the storage account to make images publicly viewable via direct URL.
             await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
         }
+        // #region agent log H-A/H-B
+        catch (Azure.RequestFailedException ex)
+        {
+            Console.Error.WriteLine("[DBG-f875ef][H-A] BlobService CreateContainer failed: code=" + ex.ErrorCode + " status=" + ex.Status + " msg=" + ex.Message);
+            throw;
+        }
+        // #endregion
 
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var blobClient = containerClient.GetBlobClient(fileName);
+
+        // #region agent log H-A
+        Console.Error.WriteLine("[DBG-f875ef][H-A] BlobService about to upload: container=" + containerName + " file=" + fileName + " size=" + file.Length);
+        // #endregion
 
         using var stream = file.OpenReadStream();
         await blobClient.UploadAsync(stream, new BlobHttpHeaders
