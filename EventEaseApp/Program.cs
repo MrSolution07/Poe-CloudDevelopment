@@ -93,6 +93,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Set Permissions-Policy without browsing-topics to avoid browser console warning (e.g. on Azure)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
+    await next();
+});
 app.UseHttpsRedirection();
 app.UseRouting();
 

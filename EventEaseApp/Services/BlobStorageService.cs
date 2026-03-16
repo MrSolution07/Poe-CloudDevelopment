@@ -18,10 +18,10 @@ public class BlobStorageService : IBlobStorageService
 
     public BlobStorageService(IConfiguration configuration)
     {
-        // Support both: Connection strings (Azure Portal) and App setting AzureBlobStorage:ConnectionString
-        var connectionString = configuration["ConnectionStrings:AzureBlobStorage"]
-            ?? configuration["ConnectionStrings:BlobStorage"]
-            ?? configuration["AzureBlobStorage:ConnectionString"];
+        // Reads from App Settings (AzureBlobStorage__ConnectionString) or Connection strings (AzureBlobStorage, Custom type)
+        var connectionString = configuration["AzureBlobStorage:ConnectionString"]
+            ?? configuration.GetConnectionString("AzureBlobStorage")
+            ?? configuration.GetConnectionString("BlobStorage");
         if (!string.IsNullOrEmpty(connectionString))
             _blobServiceClient = new BlobServiceClient(connectionString);
     }
@@ -44,20 +44,9 @@ public class BlobStorageService : IBlobStorageService
             // on the storage account to make images publicly viewable via direct URL.
             await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
         }
-        // #region agent log H-A/H-B
-        catch (Azure.RequestFailedException ex)
-        {
-            Console.Error.WriteLine("[DBG-f875ef][H-A] BlobService CreateContainer failed: code=" + ex.ErrorCode + " status=" + ex.Status + " msg=" + ex.Message);
-            throw;
-        }
-        // #endregion
 
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var blobClient = containerClient.GetBlobClient(fileName);
-
-        // #region agent log H-A
-        Console.Error.WriteLine("[DBG-f875ef][H-A] BlobService about to upload: container=" + containerName + " file=" + fileName + " size=" + file.Length);
-        // #endregion
 
         using var stream = file.OpenReadStream();
         await blobClient.UploadAsync(stream, new BlobHttpHeaders
