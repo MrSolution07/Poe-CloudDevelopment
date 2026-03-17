@@ -18,10 +18,13 @@ public class BlobStorageService : IBlobStorageService
 
     public BlobStorageService(IConfiguration configuration)
     {
-        // Reads from App Settings (AzureBlobStorage__ConnectionString) or Connection strings (AzureBlobStorage, Custom type)
-        var connectionString = configuration["AzureBlobStorage:ConnectionString"]
-            ?? configuration.GetConnectionString("AzureBlobStorage")
-            ?? configuration.GetConnectionString("BlobStorage");
+        // GetConnectionString() returns null (never "") so is safe with ??.
+        // configuration["AzureBlobStorage:ConnectionString"] can return "" from appsettings.json,
+        // so it must be guarded with IsNullOrEmpty to avoid blocking the ?? chain.
+        var v1 = configuration["AzureBlobStorage:ConnectionString"];
+        var connectionString = configuration.GetConnectionString("AzureBlobStorage")
+            ?? configuration.GetConnectionString("BlobStorage")
+            ?? (string.IsNullOrEmpty(v1) ? null : v1);
         if (!string.IsNullOrEmpty(connectionString))
             _blobServiceClient = new BlobServiceClient(connectionString);
     }
