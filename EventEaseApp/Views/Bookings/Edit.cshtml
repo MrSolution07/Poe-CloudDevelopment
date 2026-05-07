@@ -30,9 +30,10 @@
             <span asp-validation-for="VenueId" class="text-danger"></span>
         </div>
         <div class="mb-4">
-            <label asp-for="BookingDate" class="form-label"></label>
+            <label asp-for="BookingDate" class="form-label">Event Date</label>
             <input asp-for="BookingDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             <span asp-validation-for="BookingDate" class="text-danger"></span>
+            <small class="form-text text-muted">Must match the selected event date. The same venue cannot be booked twice on the same day.</small>
         </div>
 
         <div class="d-flex gap-2">

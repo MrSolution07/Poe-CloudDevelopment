@@ -80,14 +80,36 @@ BEGIN
         BookingId     INT IDENTITY(1,1) PRIMARY KEY,   -- Entity integrity (PK)
         EventId       INT            NOT NULL,
         VenueId       INT            NOT NULL,
-        BookingDate   DATETIME2      NOT NULL,
+        BookingDate   DATE           NOT NULL,
         CONSTRAINT FK_Bookings_Events FOREIGN KEY (EventId)
             REFERENCES Events(EventId),                -- Referential integrity
         CONSTRAINT FK_Bookings_Venues FOREIGN KEY (VenueId)
             REFERENCES Venues(VenueId),                -- Referential integrity
+        CONSTRAINT UQ_Bookings_Event UNIQUE (EventId),
         CONSTRAINT UQ_Bookings_Venue_Date UNIQUE (VenueId, BookingDate)
             -- Prevents double-booking the same venue on the same date
     );
+END;
+
+-- If the table already exists, enforce date-only storage and uniqueness rules
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Bookings')
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM sys.columns c
+        INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
+        WHERE c.object_id = OBJECT_ID('Bookings')
+          AND c.name = 'BookingDate'
+          AND t.name <> 'date'
+    )
+    BEGIN
+        ALTER TABLE Bookings ALTER COLUMN BookingDate DATE NOT NULL;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'UQ_Bookings_Event')
+    BEGIN
+        ALTER TABLE Bookings ADD CONSTRAINT UQ_Bookings_Event UNIQUE (EventId);
+    END;
 END;
 
 -- 1.5 BookingRequests table for public enquiries

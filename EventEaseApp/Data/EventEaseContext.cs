@@ -60,6 +60,8 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(b => b.VenueId)
                   .OnDelete(DeleteBehavior.Restrict);
 
+            entity.Property(b => b.BookingDate).HasColumnType("date");
+            entity.HasIndex(b => b.EventId).IsUnique();
             entity.HasIndex(b => new { b.VenueId, b.BookingDate }).IsUnique();
         });
 

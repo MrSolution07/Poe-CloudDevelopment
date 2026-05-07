@@ -14,12 +14,14 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Use Azure SQL (or any real SQL Server) when a connection string pointing to a SQL Server host is present.
-// Fall back to InMemory for local development without a database configured.
+// In Development, skip Azure SQL so "dotnet run" works without reaching Azure (avoids connection timeout).
+// Use LocalDB or InMemory when running locally.
 bool useRealDatabase = !string.IsNullOrWhiteSpace(connectionString) &&
+    !(builder.Environment.IsDevelopment() && connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase)) &&
     (connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase) ||
      connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) ||
-     connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
-     !connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase));
+     (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
+      !connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase)));
 
 if (useRealDatabase)
 {

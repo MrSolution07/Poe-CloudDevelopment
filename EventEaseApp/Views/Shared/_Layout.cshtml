@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EventEaseApp.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="@(controller == "Home" && action == "Index" ? "landing-page" : "")">
     <header>
         <nav class="navbar navbar-expand-sm navbar-dark navbar-eventease border-0 mb-2">
             <div class="container-fluid">
@@ -80,7 +80,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Sign In</a>
+                                <a class="nav-link nav-signin" asp-controller="Account" asp-action="Login">Sign In</a>
                             </li>
                         }
                     </ul>

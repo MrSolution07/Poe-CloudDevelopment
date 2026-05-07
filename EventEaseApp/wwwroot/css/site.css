@@ -232,15 +232,46 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--eventease-surface-alt);
   padding: 0.625rem 0;
   margin-top: 2rem;
-  font-size: 0.8125rem;
+  font-size: 0.95rem;
+  border-top: 1px solid var(--eventease-border);
 }
 
 .footer-eventease .azure-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--eventease-text-muted);
+}
+
+/* Sticky footer (landing page) */
+.landing-page main {
+  padding-bottom: 4.5rem;
+}
+
+.landing-page .footer-eventease {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  margin-top: 0;
+}
+
+/* Navbar Sign In highlight */
+.navbar-eventease .nav-link.nav-signin {
+  background: #ffffff;
+  color: var(--eventease-primary) !important;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem !important;
+  margin-left: 0.25rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-eventease .nav-link.nav-signin:hover,
+.navbar-eventease .nav-link.nav-signin:focus {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--eventease-primary-hover) !important;
 }
 
 /* 12. Breadcrumb */

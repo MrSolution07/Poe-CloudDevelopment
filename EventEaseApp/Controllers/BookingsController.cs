@@ -122,9 +122,30 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        if (booking.BookingDate.Date < DateTime.Today)
+        var ev = await _context.Events
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EventId == booking.EventId);
+        if (ev == null)
         {
-            TempData["ErrorMessage"] = "Booking date cannot be in the past. Please select today or a future date.";
+            TempData["ErrorMessage"] = "The selected event could not be found. Please choose a valid event.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        var eventDay = ev.EventDate.Date;
+
+        if (booking.BookingDate != default && booking.BookingDate.Date != eventDay)
+        {
+            TempData["ErrorMessage"] = "Booking date must match the event date.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        booking.BookingDate = eventDay;
+
+        if (booking.BookingDate < DateTime.Today)
+        {
+            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select an event that takes place today or in the future.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
@@ -133,6 +154,14 @@ public class BookingsController : Controller
         if (venue != null && !venue.IsAvailable)
         {
             TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        bool eventAlreadyBooked = await _context.Bookings.AnyAsync(b => b.EventId == booking.EventId);
+        if (eventAlreadyBooked)
+        {
+            TempData["ErrorMessage"] = "This event has already been booked. Please select a different event.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
@@ -186,9 +215,30 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        if (booking.BookingDate.Date < DateTime.Today)
+        var ev = await _context.Events
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EventId == booking.EventId);
+        if (ev == null)
         {
-            TempData["ErrorMessage"] = "Booking date cannot be in the past. Please select today or a future date.";
+            TempData["ErrorMessage"] = "The selected event could not be found. Please choose a valid event.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        var eventDay = ev.EventDate.Date;
+
+        if (booking.BookingDate != default && booking.BookingDate.Date != eventDay)
+        {
+            TempData["ErrorMessage"] = "Booking date must match the event date.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        booking.BookingDate = eventDay;
+
+        if (booking.BookingDate < DateTime.Today)
+        {
+            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select an event that takes place today or in the future.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
@@ -197,6 +247,16 @@ public class BookingsController : Controller
         if (venue != null && !venue.IsAvailable)
         {
             TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+
+        bool eventAlreadyBooked = await _context.Bookings.AnyAsync(b =>
+            b.EventId == booking.EventId &&
+            b.BookingId != booking.BookingId);
+        if (eventAlreadyBooked)
+        {
+            TempData["ErrorMessage"] = "This event has already been booked. Please select a different event.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
