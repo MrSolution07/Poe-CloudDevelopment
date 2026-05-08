@@ -49,8 +49,10 @@
             <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
         </div>
         <div class="mb-4">
-            <label class="form-label">Or Upload Image</label>
+            <label class="form-label">Or upload image</label>
             <input type="file" name="imageFile" class="form-control" accept="image/*" />
+            <small class="form-text text-muted">Large images are automatically resized and optimised for faster uploads.</small>
+            @Html.ValidationMessage("imageFile", "", new { @class = "text-danger d-block mt-1" })
         </div>
 
         <div class="d-flex gap-2">

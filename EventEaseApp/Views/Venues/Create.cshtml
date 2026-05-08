@@ -39,8 +39,10 @@
             <small class="form-text text-muted">Enter a URL or upload an image below. Azure Blob Storage stores uploaded images.</small>
         </div>
         <div class="mb-3">
-            <label class="form-label">Or Upload Image</label>
+            <label class="form-label">Or upload image</label>
             <input type="file" name="imageFile" class="form-control" accept="image/*" />
+            <small class="form-text text-muted">Large images are automatically resized and optimised for faster uploads.</small>
+            @Html.ValidationMessage("imageFile", "", new { @class = "text-danger d-block mt-1" })
         </div>
 
         <div class="form-section-title mt-4">Availability</div>

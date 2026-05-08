@@ -38,6 +38,23 @@ body {
   background-color: var(--eventease-surface);
 }
 
+/* Sticky footer for the main app shell: body fills the viewport, the
+   .container wrapper grows to take any spare height, and the footer
+   sits naturally at the bottom of the viewport on short pages while
+   still being pushed down by long content. The auth pages (Login,
+   Register, AccessDenied) opt out via body.auth-body and keep their
+   own split-pane layout. */
+body:not(.auth-body) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body:not(.auth-body) > .container {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   color: var(--eventease-text);
@@ -227,10 +244,11 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.5rem;
 }
 
-/* 11. Footer */
+/* 11. Footer (sticky-bottom via body flex-column above) */
 .footer-eventease {
+  flex-shrink: 0;
   background-color: var(--eventease-surface-alt);
-  padding: 0.625rem 0;
+  padding: 0.75rem 0;
   margin-top: 2rem;
   font-size: 0.95rem;
   border-top: 1px solid var(--eventease-border);
@@ -242,20 +260,6 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0.25rem;
   font-size: 0.9rem;
   color: var(--eventease-text-muted);
-}
-
-/* Sticky footer (landing page) */
-.landing-page main {
-  padding-bottom: 4.5rem;
-}
-
-.landing-page .footer-eventease {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1030;
-  margin-top: 0;
 }
 
 /* Navbar Sign In highlight */

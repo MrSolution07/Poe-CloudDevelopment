@@ -88,8 +88,8 @@ public class EventsController : Controller
                 if (!_blobService.IsConfigured)
                 {
                     ModelState.AddModelError("imageFile",
-                        "Image upload is unavailable because Azure Blob Storage is not configured. Provide an image URL instead.");
-                    TempData["ErrorMessage"] = "Image upload unavailable; provide a URL instead.";
+                        "Image upload is disabled in this environment because Azure Blob Storage has not been configured. Remove the file to save without an image, or paste a public image URL into the Image URL field.");
+                    TempData["ErrorMessage"] = "Image upload is disabled — Azure Blob Storage is not configured.";
                     await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
                     return View(ev);
                 }
@@ -114,9 +114,9 @@ public class EventsController : Controller
         catch (Azure.RequestFailedException ex)
         {
             _logger.LogError(ex, "Azure Blob upload failed while creating event {EventName}", ev.EventName);
-            ModelState.AddModelError(string.Empty,
-                "We could not upload the image to cloud storage. Please try again.");
-            TempData["ErrorMessage"] = "We could not upload the image to cloud storage. Please try again.";
+            ModelState.AddModelError("imageFile",
+                "Azure Blob Storage rejected the upload. Verify the storage account connection string and that the storage account is reachable.");
+            TempData["ErrorMessage"] = "Azure Blob Storage rejected the upload — check the connection string.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }
@@ -179,8 +179,8 @@ public class EventsController : Controller
                 if (!_blobService.IsConfigured)
                 {
                     ModelState.AddModelError("imageFile",
-                        "Image upload is unavailable because Azure Blob Storage is not configured. Provide an image URL instead.");
-                    TempData["ErrorMessage"] = "Image upload unavailable; provide a URL instead.";
+                        "Image upload is disabled in this environment because Azure Blob Storage has not been configured. Remove the file to save without changing the image, or paste a public image URL into the Image URL field.");
+                    TempData["ErrorMessage"] = "Image upload is disabled — Azure Blob Storage is not configured.";
                     await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
                     return View(ev);
                 }
@@ -208,9 +208,9 @@ public class EventsController : Controller
         catch (Azure.RequestFailedException ex)
         {
             _logger.LogError(ex, "Azure Blob upload failed while editing event {EventId}", id);
-            ModelState.AddModelError(string.Empty,
-                "We could not upload the image to cloud storage. Please try again.");
-            TempData["ErrorMessage"] = "We could not upload the image to cloud storage. Please try again.";
+            ModelState.AddModelError("imageFile",
+                "Azure Blob Storage rejected the upload. Verify the storage account connection string and that the storage account is reachable.");
+            TempData["ErrorMessage"] = "Azure Blob Storage rejected the upload — check the connection string.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }

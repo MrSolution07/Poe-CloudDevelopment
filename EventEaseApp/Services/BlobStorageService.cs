@@ -30,9 +30,25 @@ public class BlobStorageService : IBlobStorageService
             ?? configuration.GetConnectionString("BlobStorage")
             ?? (string.IsNullOrEmpty(rawValue) ? null : rawValue);
 
-        if (!string.IsNullOrEmpty(connectionString))
-            _blobServiceClient = new BlobServiceClient(connectionString);
+        if (string.IsNullOrWhiteSpace(connectionString) || IsPlaceholder(connectionString))
+        {
+            // Service starts in a "disabled" state. IsConfigured stays false and
+            // controllers route uploads to a friendly message instead of throwing.
+            _logger.LogInformation(
+                "Azure Blob Storage is not configured; image uploads are disabled in this environment.");
+            return;
+        }
+
+        _blobServiceClient = new BlobServiceClient(connectionString);
     }
+
+    // Treat the appsettings.AzureExample.json template as "not configured" so a
+    // student that copy-pastes the example without filling in real credentials
+    // gets the clear "not configured" message rather than an Azure auth error.
+    private static bool IsPlaceholder(string connectionString)
+        => connectionString.Contains("YOUR-ACCOUNT", StringComparison.OrdinalIgnoreCase)
+        || connectionString.Contains("YOUR-KEY", StringComparison.OrdinalIgnoreCase)
+        || connectionString.Contains("YOUR-SERVER", StringComparison.OrdinalIgnoreCase);
 
     public async Task<string> UploadImageAsync(IFormFile file, string containerName)
     {

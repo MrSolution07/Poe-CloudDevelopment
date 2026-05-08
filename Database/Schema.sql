@@ -132,33 +132,37 @@ END;
 
 -- ==================== PART 1: Seed Data ====================
 
--- Seed sample venues. ImageUrl left NULL so the application's neutral
--- local fallback (wwwroot/images/venue-fallback.jpg) renders end-to-end
--- and uploaded blob URLs replace it once a real image is attached.
+-- Seed sample venues. ImageUrl points at themed local images shipped
+-- under EventEaseApp/wwwroot/images/. User-created rows with NULL/empty
+-- ImageUrl fall back to the neutral venue-fallback.jpg / event-fallback.jpg
+-- through the application's ImageHelper.
 IF NOT EXISTS (SELECT 1 FROM Venues)
 BEGIN
     SET IDENTITY_INSERT Venues ON;
     INSERT INTO Venues (VenueId, VenueName, Location, Capacity, ImageUrl, IsAvailable) VALUES
-        (1, 'Grand Ballroom',  '123 Main Street, Johannesburg', 500, NULL, 1),
-        (2, 'Garden Pavilion', '45 Park Lane, Cape Town',       200, NULL, 1),
-        (3, 'Rooftop Terrace', '78 Skyline Drive, Durban',      150, NULL, 1);
+        (1, 'Grand Ballroom',  '123 Main Street, Johannesburg', 500,
+         '/images/venue-grand-ballroom.jpg',   1),
+        (2, 'Garden Pavilion', '45 Park Lane, Cape Town',       200,
+         '/images/venue-garden-pavilion.jpg',  1),
+        (3, 'Rooftop Terrace', '78 Skyline Drive, Durban',      150,
+         '/images/venue-rooftop-terrace.jpg',  1);
     SET IDENTITY_INSERT Venues OFF;
 END;
 
--- Seed sample events. ImageUrl left NULL — see comment above.
+-- Seed sample events. ImageUrl points at themed local images — see comment above.
 IF NOT EXISTS (SELECT 1 FROM Events)
 BEGIN
     SET IDENTITY_INSERT Events ON;
     INSERT INTO Events (EventId, EventName, EventDate, Description, VenueId, EventTypeId, ImageUrl) VALUES
         (1, 'Tech Summit 2026',    '2026-06-15',
          'Annual technology conference featuring keynote speakers and workshops.',
-         1, 1, NULL),
+         1, 1, '/images/event-tech-summit.jpg'),
         (2, 'Spring Wedding Expo', '2026-09-20',
          'Showcase of wedding vendors, venues, and planning services.',
-         2, 2, NULL),
+         2, 2, '/images/event-wedding-expo.jpg'),
         (3, 'Jazz Night',          '2026-07-10',
          'An evening of live jazz music under the stars on the rooftop terrace.',
-         3, 3, NULL);
+         3, 3, '/images/event-jazz-night.jpg');
     SET IDENTITY_INSERT Events OFF;
 END;
 

@@ -41,12 +41,14 @@
         @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
             <div class="mb-3">
-                <img src="@Model.ImageUrl" alt="Current" class="img-thumbnail" style="max-height: 150px;" />
+                <img src="@ImageHelper.ResolveVenueImage(Model.ImageUrl)" alt="Current image" class="img-thumbnail media-thumb" />
             </div>
         }
         <div class="mb-3">
-            <label class="form-label">Upload New Image</label>
+            <label class="form-label">Upload new image</label>
             <input type="file" name="imageFile" class="form-control" accept="image/*" />
+            <small class="form-text text-muted">Large images are automatically resized and optimised for faster uploads.</small>
+            @Html.ValidationMessage("imageFile", "", new { @class = "text-danger d-block mt-1" })
         </div>
 
         <div class="form-section-title mt-4">Availability</div>

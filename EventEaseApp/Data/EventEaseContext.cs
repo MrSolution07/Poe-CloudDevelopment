@@ -122,8 +122,10 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
             new EventType { EventTypeId = 8, Name = "Other" }
         );
 
-        // Seed rows leave ImageUrl as NULL so the local fallback image
-        // helper (wwwroot/images/...) renders end-to-end out of the box.
+        // Seed rows reference themed local images shipped under
+        // wwwroot/images/. The neutral venue-fallback.jpg / event-fallback.jpg
+        // remain in place for any user-created row that has no ImageUrl yet
+        // (resolved via EventEaseApp.Helpers.ImageHelper).
         modelBuilder.Entity<Venue>().HasData(
             new Venue
             {
@@ -131,7 +133,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Grand Ballroom",
                 Location = "123 Main Street, Johannesburg",
                 Capacity = 500,
-                ImageUrl = null,
+                ImageUrl = "/images/venue-grand-ballroom.jpg",
                 IsAvailable = true
             },
             new Venue
@@ -140,7 +142,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Garden Pavilion",
                 Location = "45 Park Lane, Cape Town",
                 Capacity = 200,
-                ImageUrl = null,
+                ImageUrl = "/images/venue-garden-pavilion.jpg",
                 IsAvailable = true
             },
             new Venue
@@ -149,7 +151,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Rooftop Terrace",
                 Location = "78 Skyline Drive, Durban",
                 Capacity = 150,
-                ImageUrl = null,
+                ImageUrl = "/images/venue-rooftop-terrace.jpg",
                 IsAvailable = true
             }
         );
@@ -163,7 +165,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "Annual technology conference featuring keynote speakers and workshops.",
                 VenueId = 1,
                 EventTypeId = 1,
-                ImageUrl = null
+                ImageUrl = "/images/event-tech-summit.jpg"
             },
             new Event
             {
@@ -173,7 +175,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "Showcase of wedding vendors, venues, and planning services.",
                 VenueId = 2,
                 EventTypeId = 2,
-                ImageUrl = null
+                ImageUrl = "/images/event-wedding-expo.jpg"
             },
             new Event
             {
@@ -183,7 +185,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "An evening of live jazz music under the stars on the rooftop terrace.",
                 VenueId = 3,
                 EventTypeId = 3,
-                ImageUrl = null
+                ImageUrl = "/images/event-jazz-night.jpg"
             }
         );
 

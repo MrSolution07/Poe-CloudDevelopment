@@ -91,29 +91,33 @@ BEGIN
 END;
 
 
--- Sample Venues — ImageUrl left NULL so the application's neutral local
--- fallback image (wwwroot/images/venue-fallback.jpg) renders end-to-end.
+-- Sample Venues — ImageUrl points at themed local images shipped
+-- under EventEaseApp/wwwroot/images/. User-created rows fall back
+-- to the neutral venue-fallback.jpg via the application's ImageHelper.
 IF NOT EXISTS (SELECT 1 FROM Venues)
 BEGIN
     INSERT INTO Venues (VenueName, Location, Capacity, ImageUrl) VALUES
-        ('Grand Ballroom', '123 Main Street, Johannesburg', 500, NULL),
-        ('Garden Pavilion', '45 Park Lane, Cape Town', 200, NULL),
-        ('Rooftop Terrace', '78 Skyline Drive, Durban', 150, NULL);
+        ('Grand Ballroom',  '123 Main Street, Johannesburg', 500,
+         '/images/venue-grand-ballroom.jpg'),
+        ('Garden Pavilion', '45 Park Lane, Cape Town',       200,
+         '/images/venue-garden-pavilion.jpg'),
+        ('Rooftop Terrace', '78 Skyline Drive, Durban',      150,
+         '/images/venue-rooftop-terrace.jpg');
 END;
 
--- Sample Events — ImageUrl left NULL — see comment above.
+-- Sample Events — ImageUrl points at themed local images — see comment above.
 IF NOT EXISTS (SELECT 1 FROM Events)
 BEGIN
     INSERT INTO Events (EventName, EventDate, Description, VenueId, ImageUrl) VALUES
-        ('Tech Summit 2026', '2026-06-15',
+        ('Tech Summit 2026',    '2026-06-15',
          'Annual technology conference featuring keynote speakers and workshops.',
-         1, NULL),
+         1, '/images/event-tech-summit.jpg'),
         ('Spring Wedding Expo', '2026-09-20',
          'Showcase of wedding vendors, venues, and planning services.',
-         2, NULL),
-        ('Jazz Night', '2026-07-10',
+         2, '/images/event-wedding-expo.jpg'),
+        ('Jazz Night',          '2026-07-10',
          'An evening of live jazz music under the stars on the rooftop terrace.',
-         3, NULL);
+         3, '/images/event-jazz-night.jpg');
 END;
 
 -- Sample Bookings
