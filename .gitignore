@@ -26,6 +26,9 @@ Thumbs.db
 
 ## Local config overrides (do not commit secrets)
 **/appsettings.*.local.json
+.env
+.env.local
+.env.*.local
 
 ## Deployment artifacts
 publish/
