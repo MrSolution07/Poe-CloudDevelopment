@@ -13,15 +13,19 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Use Azure SQL (or any real SQL Server) when a connection string pointing to a SQL Server host is present.
-// In Development, skip Azure SQL so "dotnet run" works without reaching Azure (avoids connection timeout).
-// Use LocalDB or InMemory when running locally.
-bool useRealDatabase = !string.IsNullOrWhiteSpace(connectionString) &&
-    !(builder.Environment.IsDevelopment() && connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase)) &&
-    (connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase) ||
-     connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) ||
-     (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
-      !connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase)));
+// Use a real SQL Server (Azure SQL or on-prem) whenever a connection string is
+// configured for a non-LocalDB host. Falling back to InMemory only when no
+// connection string is present or it explicitly points at LocalDB keeps the
+// local override file (appsettings.Development.local.json) authoritative —
+// if a developer puts an Azure SQL connection string there, it is used.
+// Set "Database:ForceInMemory" to true in any settings file to override.
+bool forceInMemory = builder.Configuration.GetValue<bool>("Database:ForceInMemory");
+bool useRealDatabase = !forceInMemory
+    && !string.IsNullOrWhiteSpace(connectionString)
+    && (connectionString.Contains("database.windows.net", StringComparison.OrdinalIgnoreCase)
+        || connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase)
+        || (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase)
+            && !connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase)));
 
 if (useRealDatabase)
 {
