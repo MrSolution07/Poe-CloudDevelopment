@@ -132,34 +132,33 @@ END;
 
 -- ==================== PART 1: Seed Data ====================
 
--- Seed sample venues (placeholder image URLs)
+-- Seed sample venues. ImageUrl left NULL so the application's neutral
+-- local fallback (wwwroot/images/venue-fallback.jpg) renders end-to-end
+-- and uploaded blob URLs replace it once a real image is attached.
 IF NOT EXISTS (SELECT 1 FROM Venues)
 BEGIN
     SET IDENTITY_INSERT Venues ON;
     INSERT INTO Venues (VenueId, VenueName, Location, Capacity, ImageUrl, IsAvailable) VALUES
-        (1, 'Grand Ballroom',  '123 Main Street, Johannesburg', 500,
-         'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600', 1),
-        (2, 'Garden Pavilion', '45 Park Lane, Cape Town',       200,
-         'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600', 1),
-        (3, 'Rooftop Terrace', '78 Skyline Drive, Durban',      150,
-         'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600', 1);
+        (1, 'Grand Ballroom',  '123 Main Street, Johannesburg', 500, NULL, 1),
+        (2, 'Garden Pavilion', '45 Park Lane, Cape Town',       200, NULL, 1),
+        (3, 'Rooftop Terrace', '78 Skyline Drive, Durban',      150, NULL, 1);
     SET IDENTITY_INSERT Venues OFF;
 END;
 
--- Seed sample events (placeholder image URLs)
+-- Seed sample events. ImageUrl left NULL — see comment above.
 IF NOT EXISTS (SELECT 1 FROM Events)
 BEGIN
     SET IDENTITY_INSERT Events ON;
     INSERT INTO Events (EventId, EventName, EventDate, Description, VenueId, EventTypeId, ImageUrl) VALUES
         (1, 'Tech Summit 2026',    '2026-06-15',
          'Annual technology conference featuring keynote speakers and workshops.',
-         1, 1, 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600'),
+         1, 1, NULL),
         (2, 'Spring Wedding Expo', '2026-09-20',
          'Showcase of wedding vendors, venues, and planning services.',
-         2, 2, 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600'),
+         2, 2, NULL),
         (3, 'Jazz Night',          '2026-07-10',
          'An evening of live jazz music under the stars on the rooftop terrace.',
-         3, 3, 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=600');
+         3, 3, NULL);
     SET IDENTITY_INSERT Events OFF;
 END;
 

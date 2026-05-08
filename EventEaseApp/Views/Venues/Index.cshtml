@@ -22,14 +22,7 @@
         {
             <div class="col-md-4">
                 <div class="card card-eventease h-100">
-                    @if (!string.IsNullOrEmpty(venue.ImageUrl))
-                    {
-                        <img src="@venue.ImageUrl" class="card-img-top" alt="@venue.VenueName" style="height: 200px; object-fit: cover;" />
-                    }
-                    else
-                    {
-                        <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600" class="card-img-top" alt="Venue placeholder" style="height: 200px; object-fit: cover;" />
-                    }
+                    <img src="@ImageHelper.ResolveVenueImage(venue.ImageUrl)" class="card-img-top media-card-img" alt="@venue.VenueName" loading="lazy" />
                     <div class="card-body">
                         <h5 class="card-title fw-semibold">@venue.VenueName</h5>
                         <p class="card-text text-muted small">@venue.Location</p>

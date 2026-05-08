@@ -362,6 +362,42 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--eventease-text-muted);
 }
 
+/* 16c. Media images (consolidated; replaces inline style="height:...") */
+.media-card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.media-detail-img {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  display: block;
+  background: var(--eventease-surface-alt);
+}
+
+.media-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  display: block;
+  background: var(--eventease-surface-alt);
+}
+
+.media-thumb-sm {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  display: block;
+  background: var(--eventease-surface-alt);
+}
+
 .form-floating > .form-control-plaintext::placeholder,
 .form-floating > .form-control::placeholder {
   color: var(--eventease-text-muted);

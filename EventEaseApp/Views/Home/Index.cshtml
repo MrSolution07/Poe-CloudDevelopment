@@ -2,8 +2,6 @@
     ViewData["Title"] = "Home";
     var venues = ViewBag.FeaturedVenues as List<EventEaseApp.Models.Venue> ?? new();
     var events = ViewBag.UpcomingEvents as List<EventEaseApp.Models.Event> ?? new();
-    var defaultVenueImg = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600";
-    var defaultEventImg = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600";
 }
 
 <section class="landing-hero rounded-3 p-5 mb-5 text-center">
@@ -27,7 +25,7 @@
             {
                 <div class="col-md-4">
                     <div class="card card-eventease h-100">
-                        <img src="@(venue.ImageUrl ?? defaultVenueImg)" class="card-img-top" alt="@venue.VenueName" style="height: 200px; object-fit: cover;" />
+                        <img src="@ImageHelper.ResolveVenueImage(venue.ImageUrl)" class="card-img-top media-card-img" alt="@venue.VenueName" loading="lazy" />
                         <div class="card-body">
                             <h5 class="card-title fw-semibold">@venue.VenueName</h5>
                             <p class="card-text text-muted small">@venue.Location</p>
@@ -58,7 +56,7 @@
             {
                 <div class="col-md-4">
                     <div class="card card-eventease h-100">
-                        <img src="@(ev.ImageUrl ?? defaultEventImg)" class="card-img-top" alt="@ev.EventName" style="height: 200px; object-fit: cover;" />
+                        <img src="@ImageHelper.ResolveEventImage(ev.ImageUrl)" class="card-img-top media-card-img" alt="@ev.EventName" loading="lazy" />
                         <div class="card-body">
                             <h5 class="card-title fw-semibold">@ev.EventName</h5>
                             <p class="card-text text-muted small">@ev.EventDate.ToString("dd MMM yyyy")</p>

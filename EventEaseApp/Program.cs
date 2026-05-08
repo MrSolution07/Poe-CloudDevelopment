@@ -58,7 +58,18 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
+builder.Services.AddSingleton<IImageProcessingService, ImageProcessingService>();
 builder.Services.AddScoped<IEmailService, DevEmailService>();
+
+var maxIncomingBytes = builder.Configuration.GetValue<long?>("ImageProcessing:MaxIncomingBytes") ?? 20_971_520L;
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = maxIncomingBytes;
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = maxIncomingBytes;
+});
 
 var app = builder.Build();
 
@@ -72,17 +83,26 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var admin = await userManager.FindByEmailAsync("admin@eventease.co.za");
+    var configuredEmail = app.Configuration["AdminSeed:Email"];
+    var configuredPassword = app.Configuration["AdminSeed:Password"];
+    var adminEmail = !string.IsNullOrWhiteSpace(configuredEmail)
+        ? configuredEmail
+        : "admin@eventease.co.za";
+    var adminPassword = !string.IsNullOrWhiteSpace(configuredPassword)
+        ? configuredPassword
+        : "Admin123";
+
+    var admin = await userManager.FindByEmailAsync(adminEmail);
     if (admin == null)
     {
         admin = new ApplicationUser
         {
-            UserName = "admin@eventease.co.za",
-            Email = "admin@eventease.co.za",
+            UserName = adminEmail,
+            Email = adminEmail,
             FullName = "Admin User",
             EmailConfirmed = true
         };
-        await userManager.CreateAsync(admin, "Admin123");
+        await userManager.CreateAsync(admin, adminPassword);
     }
 
     if (!await userManager.IsInRoleAsync(admin, "Admin"))
@@ -94,6 +114,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
 // Set Permissions-Policy without browsing-topics to avoid browser console warning (e.g. on Azure)
 app.Use(async (context, next) =>

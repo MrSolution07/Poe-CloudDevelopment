@@ -11,10 +11,12 @@ namespace EventEaseApp.Controllers;
 public class BookingsController : Controller
 {
     private readonly EventEaseContext _context;
+    private readonly ILogger<BookingsController> _logger;
 
-    public BookingsController(EventEaseContext context)
+    public BookingsController(EventEaseContext context, ILogger<BookingsController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IActionResult> Index()
@@ -39,10 +41,18 @@ public class BookingsController : Controller
         return View(booking);
     }
 
-    // Consolidated booking view with search and filtering (Part 2 & 3)
+    // Consolidated booking view with search and filtering (Part 2 & 3).
+    // Uses the SQL-mapped vw_BookingDetail when a relational provider is in
+    // use; falls back to a LINQ join (parity with the view's columns) for
+    // the InMemory provider in development.
     public async Task<IActionResult> Overview(BookingSearchViewModel model)
     {
-        var query = from b in _context.Bookings
+        IQueryable<BookingDetailViewModel> query;
+
+        var providerName = _context.Database.ProviderName ?? string.Empty;
+        if (providerName.Contains("InMemory", StringComparison.OrdinalIgnoreCase))
+        {
+            query = from b in _context.Bookings
                     join e in _context.Events on b.EventId equals e.EventId
                     join v in _context.Venues on b.VenueId equals v.VenueId
                     join et in _context.EventTypes on e.EventTypeId equals et.EventTypeId into etGroup
@@ -64,8 +74,28 @@ public class BookingsController : Controller
                         ImageUrl = v.ImageUrl,
                         IsAvailable = v.IsAvailable
                     };
+        }
+        else
+        {
+            query = _context.BookingDetailView.Select(b => new BookingDetailViewModel
+            {
+                BookingId = b.BookingId,
+                BookingDate = b.BookingDate,
+                EventId = b.EventId,
+                EventName = b.EventName,
+                EventDate = b.EventDate,
+                Description = b.EventDescription,
+                EventImageUrl = b.EventImageUrl,
+                EventTypeName = b.EventTypeName,
+                VenueId = b.VenueId,
+                VenueName = b.VenueName,
+                Location = b.Location,
+                Capacity = b.Capacity,
+                ImageUrl = b.VenueImageUrl,
+                IsAvailable = b.IsAvailable
+            });
+        }
 
-        // Search by BookingID or Event Name
         if (!string.IsNullOrWhiteSpace(model.SearchTerm))
         {
             var term = model.SearchTerm.Trim();
@@ -79,7 +109,6 @@ public class BookingsController : Controller
             }
         }
 
-        // Filter by EventType
         if (model.EventTypeId.HasValue)
         {
             var eventTypeId = model.EventTypeId.Value;
@@ -89,14 +118,12 @@ public class BookingsController : Controller
             query = query.Where(b => eventIds.Contains(b.EventId));
         }
 
-        // Filter by date range on EventDate (the date the event takes place)
         if (model.DateFrom.HasValue)
             query = query.Where(b => b.EventDate >= model.DateFrom.Value);
 
         if (model.DateTo.HasValue)
             query = query.Where(b => b.EventDate <= model.DateTo.Value);
 
-        // Filter by venue availability
         if (model.IsAvailable.HasValue)
             query = query.Where(b => b.IsAvailable == model.IsAvailable.Value);
 
@@ -122,57 +149,10 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        var ev = await _context.Events
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.EventId == booking.EventId);
-        if (ev == null)
+        var validationError = await ValidateBookingAsync(booking, isEdit: false);
+        if (validationError != null)
         {
-            TempData["ErrorMessage"] = "The selected event could not be found. Please choose a valid event.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        var eventDay = ev.EventDate.Date;
-
-        if (booking.BookingDate != default && booking.BookingDate.Date != eventDay)
-        {
-            TempData["ErrorMessage"] = "Booking date must match the event date.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        booking.BookingDate = eventDay;
-
-        if (booking.BookingDate < DateTime.Today)
-        {
-            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select an event that takes place today or in the future.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        var venue = await _context.Venues.FindAsync(booking.VenueId);
-        if (venue != null && !venue.IsAvailable)
-        {
-            TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        bool eventAlreadyBooked = await _context.Bookings.AnyAsync(b => b.EventId == booking.EventId);
-        if (eventAlreadyBooked)
-        {
-            TempData["ErrorMessage"] = "This event has already been booked. Please select a different event.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        bool doubleBooked = await _context.Bookings.AnyAsync(b =>
-            b.VenueId == booking.VenueId &&
-            b.BookingDate.Date == booking.BookingDate.Date);
-
-        if (doubleBooked)
-        {
-            TempData["ErrorMessage"] = "This venue is already booked on the selected date. Please choose a different date or venue.";
+            TempData["ErrorMessage"] = validationError;
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
@@ -184,8 +164,21 @@ public class BookingsController : Controller
             TempData["SuccessMessage"] = "Booking created successfully.";
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception)
+        catch (DbUpdateException ex)
         {
+            _logger.LogWarning(ex,
+                "Database error while creating booking for event {EventId} venue {VenueId} on {Date}",
+                booking.EventId, booking.VenueId, booking.BookingDate);
+            ModelState.AddModelError(string.Empty,
+                "This booking could not be saved. The venue may already be booked on the selected date or the event already has a booking.");
+            TempData["ErrorMessage"] = "Could not save the booking due to a database conflict.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating booking");
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
             TempData["ErrorMessage"] = "An error occurred while creating the booking.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
@@ -215,60 +208,10 @@ public class BookingsController : Controller
             return View(booking);
         }
 
-        var ev = await _context.Events
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.EventId == booking.EventId);
-        if (ev == null)
+        var validationError = await ValidateBookingAsync(booking, isEdit: true);
+        if (validationError != null)
         {
-            TempData["ErrorMessage"] = "The selected event could not be found. Please choose a valid event.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        var eventDay = ev.EventDate.Date;
-
-        if (booking.BookingDate != default && booking.BookingDate.Date != eventDay)
-        {
-            TempData["ErrorMessage"] = "Booking date must match the event date.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        booking.BookingDate = eventDay;
-
-        if (booking.BookingDate < DateTime.Today)
-        {
-            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select an event that takes place today or in the future.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        var venue = await _context.Venues.FindAsync(booking.VenueId);
-        if (venue != null && !venue.IsAvailable)
-        {
-            TempData["ErrorMessage"] = "The selected venue is currently unavailable. Please choose a different venue.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        bool eventAlreadyBooked = await _context.Bookings.AnyAsync(b =>
-            b.EventId == booking.EventId &&
-            b.BookingId != booking.BookingId);
-        if (eventAlreadyBooked)
-        {
-            TempData["ErrorMessage"] = "This event has already been booked. Please select a different event.";
-            await PopulateDropdowns(booking.EventId, booking.VenueId);
-            return View(booking);
-        }
-
-        bool doubleBooked = await _context.Bookings.AnyAsync(b =>
-            b.VenueId == booking.VenueId &&
-            b.BookingDate.Date == booking.BookingDate.Date &&
-            b.BookingId != booking.BookingId);
-
-        if (doubleBooked)
-        {
-            TempData["ErrorMessage"] = "This venue is already booked on the selected date. Please choose a different date or venue.";
+            TempData["ErrorMessage"] = validationError;
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
         }
@@ -286,8 +229,21 @@ public class BookingsController : Controller
                 return NotFound();
             throw;
         }
-        catch (Exception)
+        catch (DbUpdateException ex)
         {
+            _logger.LogWarning(ex,
+                "Database error while editing booking {BookingId} for event {EventId} venue {VenueId} on {Date}",
+                booking.BookingId, booking.EventId, booking.VenueId, booking.BookingDate);
+            ModelState.AddModelError(string.Empty,
+                "This booking could not be saved. The venue may already be booked on the selected date.");
+            TempData["ErrorMessage"] = "Could not save the booking due to a database conflict.";
+            await PopulateDropdowns(booking.EventId, booking.VenueId);
+            return View(booking);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while editing booking {BookingId}", id);
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
             TempData["ErrorMessage"] = "An error occurred while updating the booking.";
             await PopulateDropdowns(booking.EventId, booking.VenueId);
             return View(booking);
@@ -320,12 +276,81 @@ public class BookingsController : Controller
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Booking deleted successfully.";
         }
-        catch (Exception)
+        catch (DbUpdateException ex)
         {
-            TempData["ErrorMessage"] = "An error occurred while deleting the booking.";
+            _logger.LogError(ex, "Database error while deleting booking {BookingId}", id);
+            TempData["ErrorMessage"] = "Could not delete the booking due to a database error.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting booking {BookingId}", id);
+            TempData["ErrorMessage"] = "An unexpected error occurred while deleting the booking.";
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<string?> ValidateBookingAsync(Booking booking, bool isEdit)
+    {
+        var ev = await _context.Events
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EventId == booking.EventId);
+        if (ev == null)
+        {
+            ModelState.AddModelError(nameof(Booking.EventId),
+                "The selected event could not be found. Please choose a valid event.");
+            return "The selected event could not be found.";
+        }
+
+        var eventDay = ev.EventDate.Date;
+
+        if (booking.BookingDate != default && booking.BookingDate.Date != eventDay)
+        {
+            ModelState.AddModelError(nameof(Booking.BookingDate),
+                "Booking date must match the event date.");
+            return "Booking date must match the event date.";
+        }
+
+        booking.BookingDate = eventDay;
+
+        if (booking.BookingDate.Date < DateTime.Today)
+        {
+            ModelState.AddModelError(nameof(Booking.BookingDate),
+                "Event date cannot be in the past. Please select a future date.");
+            return "Event date cannot be in the past.";
+        }
+
+        var venue = await _context.Venues.AsNoTracking().FirstOrDefaultAsync(v => v.VenueId == booking.VenueId);
+        if (venue != null && !venue.IsAvailable)
+        {
+            ModelState.AddModelError(nameof(Booking.VenueId),
+                "The selected venue is currently unavailable. Please choose a different venue.");
+            return "The selected venue is currently unavailable.";
+        }
+
+        bool eventAlreadyBooked = await _context.Bookings.AnyAsync(b =>
+            b.EventId == booking.EventId &&
+            (!isEdit || b.BookingId != booking.BookingId));
+        if (eventAlreadyBooked)
+        {
+            ModelState.AddModelError(nameof(Booking.EventId),
+                "This event has already been booked. Please select a different event.");
+            return "This event has already been booked.";
+        }
+
+        bool doubleBooked = await _context.Bookings.AnyAsync(b =>
+            b.VenueId == booking.VenueId &&
+            b.BookingDate.Date == booking.BookingDate.Date &&
+            (!isEdit || b.BookingId != booking.BookingId));
+
+        if (doubleBooked)
+        {
+            ModelState.AddModelError(string.Empty,
+                "This venue is already booked on the selected date. Please choose a different date or venue.");
+            return "This venue is already booked on the selected date.";
+        }
+
+        return null;
     }
 
     private async Task PopulateDropdowns(int? selectedEventId = null, int? selectedVenueId = null)

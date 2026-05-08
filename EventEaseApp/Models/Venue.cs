@@ -17,7 +17,7 @@ public class Venue
     public string Location { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Capacity is required.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Capacity must be at least 1.")]
+    [Range(1, 100000, ErrorMessage = "Capacity must be between 1 and 100,000.")]
     public int Capacity { get; set; }
 
     [StringLength(1000)]

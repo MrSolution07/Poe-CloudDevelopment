@@ -14,6 +14,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<EventType> EventTypes { get; set; }
     public DbSet<BookingRequest> BookingRequests { get; set; }
+    public DbSet<BookingDetailView> BookingDetailView { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +87,25 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // Map keyless entity to the SQL view vw_BookingDetail (Part 2 — Section C).
+        // Skip the mapping when running against the InMemory provider (Database is not relational).
+        if (Database.IsRelational())
+        {
+            modelBuilder.Entity<BookingDetailView>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("vw_BookingDetail");
+            });
+        }
+        else
+        {
+            modelBuilder.Entity<BookingDetailView>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToTable((string?)null);
+            });
+        }
+
         SeedData(modelBuilder);
     }
 
@@ -102,6 +122,8 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
             new EventType { EventTypeId = 8, Name = "Other" }
         );
 
+        // Seed rows leave ImageUrl as NULL so the local fallback image
+        // helper (wwwroot/images/...) renders end-to-end out of the box.
         modelBuilder.Entity<Venue>().HasData(
             new Venue
             {
@@ -109,7 +131,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Grand Ballroom",
                 Location = "123 Main Street, Johannesburg",
                 Capacity = 500,
-                ImageUrl = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600",
+                ImageUrl = null,
                 IsAvailable = true
             },
             new Venue
@@ -118,7 +140,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Garden Pavilion",
                 Location = "45 Park Lane, Cape Town",
                 Capacity = 200,
-                ImageUrl = "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600",
+                ImageUrl = null,
                 IsAvailable = true
             },
             new Venue
@@ -127,7 +149,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 VenueName = "Rooftop Terrace",
                 Location = "78 Skyline Drive, Durban",
                 Capacity = 150,
-                ImageUrl = "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600",
+                ImageUrl = null,
                 IsAvailable = true
             }
         );
@@ -141,7 +163,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "Annual technology conference featuring keynote speakers and workshops.",
                 VenueId = 1,
                 EventTypeId = 1,
-                ImageUrl = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600"
+                ImageUrl = null
             },
             new Event
             {
@@ -151,7 +173,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "Showcase of wedding vendors, venues, and planning services.",
                 VenueId = 2,
                 EventTypeId = 2,
-                ImageUrl = "https://images.unsplash.com/photo-1519741497674-611481863552?w=600"
+                ImageUrl = null
             },
             new Event
             {
@@ -161,7 +183,7 @@ public class EventEaseContext : IdentityDbContext<ApplicationUser>
                 Description = "An evening of live jazz music under the stars on the rooftop terrace.",
                 VenueId = 3,
                 EventTypeId = 3,
-                ImageUrl = "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=600"
+                ImageUrl = null
             }
         );
 

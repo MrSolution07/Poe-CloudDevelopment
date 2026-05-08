@@ -3,6 +3,11 @@
 @{
     ViewData["Title"] = "Booking Overview";
     ViewData["Breadcrumbs"] = new List<(string, string?)> { ("Home", Url.Action("Index", "Home")), ("Bookings", Url.Action("Index")), ("Overview", null) };
+
+    var hasAdvancedFilter = Model.EventTypeId.HasValue
+        || Model.DateFrom.HasValue
+        || Model.DateTo.HasValue
+        || Model.IsAvailable.HasValue;
 }
 
 <partial name="_Breadcrumb" />
@@ -11,64 +16,87 @@
     <h1 class="page-title">Booking Overview</h1>
 </div>
 
-<p class="text-muted mb-4">Search and filter bookings across all venues and events.</p>
+<p class="text-muted mb-4">Search bookings by ID or event name. Use the advanced filters to refine by event type, date range, or availability.</p>
 
 <div class="card card-eventease mb-4">
     <div class="card-body p-4">
         <form asp-action="Overview" method="get">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Search (Booking ID or Event Name)</label>
-                    <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="e.g. 1 or Tech Summit" />
+                <div class="col-md-9">
+                    <label class="form-label fw-semibold">Search</label>
+                    <input type="text" name="SearchTerm" value="@Model.SearchTerm"
+                           class="form-control form-control-lg"
+                           placeholder="Enter booking ID (e.g. 1) or event name (e.g. Tech Summit)"
+                           autofocus />
+                    <div class="form-text">Tip: enter a number to look up a booking by ID, or text to search by event name.</div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Event Type</label>
-                    <select name="EventTypeId" class="form-select">
-                        <option value="">All Types</option>
-                        @foreach (var et in Model.EventTypes)
-                        {
-                            @if (Model.EventTypeId == et.EventTypeId)
+                <div class="col-md-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-eventease-primary btn-lg">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                    <a asp-action="Overview" class="btn btn-link p-0 small @(string.IsNullOrEmpty(Model.SearchTerm) && !hasAdvancedFilter ? "invisible" : "")">Clear filters</a>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-link p-0 small text-decoration-none"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#advancedFilters"
+                        aria-expanded="@(hasAdvancedFilter ? "true" : "false")"
+                        aria-controls="advancedFilters">
+                    <i class="bi bi-sliders me-1" aria-hidden="true"></i>Advanced filters
+                </button>
+            </div>
+
+            <div class="collapse @(hasAdvancedFilter ? "show" : "") mt-3" id="advancedFilters">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Event type</label>
+                        <select name="EventTypeId" class="form-select">
+                            <option value="">All types</option>
+                            @foreach (var et in Model.EventTypes)
                             {
-                                <option value="@et.EventTypeId" selected>@et.Name</option>
+                                @if (Model.EventTypeId == et.EventTypeId)
+                                {
+                                    <option value="@et.EventTypeId" selected>@et.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@et.EventTypeId">@et.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Event date from</label>
+                        <input type="date" name="DateFrom" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Event date to</label>
+                        <input type="date" name="DateTo" value="@Model.DateTo?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Venue availability</label>
+                        <select name="IsAvailable" class="form-select">
+                            <option value="">All</option>
+                            @if (Model.IsAvailable == true)
+                            {
+                                <option value="true" selected>Available</option>
+                                <option value="false">Unavailable</option>
+                            }
+                            else if (Model.IsAvailable == false)
+                            {
+                                <option value="true">Available</option>
+                                <option value="false" selected>Unavailable</option>
                             }
                             else
                             {
-                                <option value="@et.EventTypeId">@et.Name</option>
+                                <option value="true">Available</option>
+                                <option value="false">Unavailable</option>
                             }
-                        }
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Event Date From</label>
-                    <input type="date" name="DateFrom" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" class="form-control" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Event Date To</label>
-                    <input type="date" name="DateTo" value="@Model.DateTo?.ToString("yyyy-MM-dd")" class="form-control" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Venue Availability</label>
-                    <select name="IsAvailable" class="form-select">
-                        <option value="">All</option>
-                        @if (Model.IsAvailable == true)
-                        {
-                            <option value="true" selected>Available</option>
-                            <option value="false">Unavailable</option>
-                        }
-                        else if (Model.IsAvailable == false)
-                        {
-                            <option value="true">Available</option>
-                            <option value="false" selected>Unavailable</option>
-                        }
-                        else
-                        {
-                            <option value="true">Available</option>
-                            <option value="false">Unavailable</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-eventease-primary w-100">Search</button>
+                        </select>
+                    </div>
                 </div>
             </div>
         </form>
@@ -84,34 +112,24 @@
                     <th>ID</th>
                     <th></th>
                     <th>Event</th>
-                    <th>Event Type</th>
-                    <th>Event Date</th>
+                    <th>Event type</th>
+                    <th>Event date</th>
                     <th>Venue</th>
                     <th>Location</th>
                     <th>Capacity</th>
                     <th>Availability</th>
-                    <th>Booking Date</th>
+                    <th>Booking date</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Results)
                 {
+                    var thumb = !string.IsNullOrEmpty(item.EventImageUrl)
+                        ? ImageHelper.ResolveEventImage(item.EventImageUrl)
+                        : ImageHelper.ResolveVenueImage(item.ImageUrl);
                     <tr>
                         <td><strong>@item.BookingId</strong></td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.EventImageUrl))
-                            {
-                                <img src="@item.EventImageUrl" alt="@item.EventName" class="overview-thumb" />
-                            }
-                            else if (!string.IsNullOrEmpty(item.ImageUrl))
-                            {
-                                <img src="@item.ImageUrl" alt="@item.VenueName" class="overview-thumb" />
-                            }
-                            else
-                            {
-                                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=80&h=80&fit=crop" alt="Event placeholder" class="overview-thumb" />
-                            }
-                        </td>
+                        <td><img src="@thumb" alt="@item.EventName" class="overview-thumb" loading="lazy" /></td>
                         <td>@item.EventName</td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.EventTypeName))

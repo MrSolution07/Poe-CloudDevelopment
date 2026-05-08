@@ -1,10 +1,12 @@
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = "Access denied";
 }
 
 <div class="text-center py-5">
-    <div class="mb-4" style="font-size: 4rem; color: var(--eventease-accent);" aria-hidden="true">&#128274;</div>
-    <h1 class="h2 fw-semibold mb-3">Access Denied</h1>
+    <div class="mb-3" aria-hidden="true">
+        <i class="bi bi-shield-lock text-secondary" style="font-size: 3.5rem;"></i>
+    </div>
+    <h1 class="h2 fw-semibold mb-3">Access denied</h1>
     <p class="text-muted mb-4">You do not have permission to view this page. Please sign in with an authorised account.</p>
-    <a asp-controller="Account" asp-action="Login" class="btn btn-eventease-primary">Sign In</a>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-eventease-primary">Sign in</a>
 </div>

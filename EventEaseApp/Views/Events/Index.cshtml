@@ -22,14 +22,7 @@
         {
             <div class="col-md-4">
                 <div class="card card-eventease h-100">
-                    @if (!string.IsNullOrEmpty(ev.ImageUrl))
-                    {
-                        <img src="@ev.ImageUrl" class="card-img-top" alt="@ev.EventName" style="height: 200px; object-fit: cover;" />
-                    }
-                    else
-                    {
-                        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" class="card-img-top" alt="Event placeholder" style="height: 200px; object-fit: cover;" />
-                    }
+                    <img src="@ImageHelper.ResolveEventImage(ev.ImageUrl)" class="card-img-top media-card-img" alt="@ev.EventName" loading="lazy" />
                     <div class="card-body">
                         <h5 class="card-title fw-semibold">@ev.EventName</h5>
                         <p class="card-text text-muted small">@ev.EventDate.ToString("dd MMM yyyy")</p>

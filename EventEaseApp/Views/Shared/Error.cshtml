@@ -1,27 +1,35 @@
 @model ErrorViewModel
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnv
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = Model.Title ?? "Error";
+    var statusCode = Model.StatusCode ?? 500;
 }
 
 <div class="text-center py-5">
-    <div class="mb-4" style="font-size: 4rem; color: var(--eventease-text-muted);" aria-hidden="true">&#9888;</div>
-    <h1 class="h2 fw-semibold text-danger mb-3">Something went wrong</h1>
-    <p class="text-muted mb-4">An error occurred while processing your request. Please try again or contact support if the problem persists.</p>
+    <div class="mb-3" aria-hidden="true">
+        <i class="bi bi-exclamation-triangle text-secondary" style="font-size: 3.5rem;"></i>
+    </div>
+    <p class="text-uppercase small text-muted mb-2">Error @statusCode</p>
+    <h1 class="h2 fw-semibold mb-3">@(Model.Title ?? "Something went wrong")</h1>
+    <p class="text-muted mb-4">@(Model.Message ?? "An unexpected error occurred. Please try again.")</p>
+    @if (!string.IsNullOrEmpty(Model.OriginalPath))
+    {
+        <p class="small text-muted mb-3">Path: <code>@Model.OriginalPath</code></p>
+    }
     @if (Model.ShowRequestId)
     {
         <p class="small text-muted">Request ID: <code>@Model.RequestId</code></p>
     }
-    <a asp-controller="Home" asp-action="Index" class="btn btn-eventease-primary">Return to Home</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-eventease-primary">Return to home</a>
 </div>
 
 @if (HostEnv.IsDevelopment())
 {
     <div class="mt-5 p-4 rounded-3" style="background: var(--eventease-surface-alt); border: 1px solid var(--eventease-border);">
-        <h3 class="h6 fw-semibold mb-2">Development Mode</h3>
+        <h3 class="h6 fw-semibold mb-2">Development mode</h3>
         <p class="small text-muted mb-0">
-            Swapping to <strong>Development</strong> environment will display more detailed information about the error.
-            The Development environment should not be enabled for deployed applications.
+            Switching to the <strong>Development</strong> environment displays more detailed error information.
+            Do not enable the Development environment in production.
         </p>
     </div>
 }

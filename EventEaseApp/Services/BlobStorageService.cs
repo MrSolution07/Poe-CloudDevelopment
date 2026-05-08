@@ -6,6 +6,7 @@ namespace EventEaseApp.Services;
 public interface IBlobStorageService
 {
     Task<string> UploadImageAsync(IFormFile file, string containerName);
+    Task<string> UploadProcessedImageAsync(Stream content, string contentType, string extension, string containerName);
     Task DeleteImageAsync(string imageUrl, string containerName);
     bool IsConfigured { get; }
 }
@@ -13,18 +14,22 @@ public interface IBlobStorageService
 public class BlobStorageService : IBlobStorageService
 {
     private readonly BlobServiceClient? _blobServiceClient;
+    private readonly ILogger<BlobStorageService> _logger;
 
     public bool IsConfigured => _blobServiceClient != null;
 
-    public BlobStorageService(IConfiguration configuration)
+    public BlobStorageService(IConfiguration configuration, ILogger<BlobStorageService> logger)
     {
+        _logger = logger;
+
         // GetConnectionString() returns null (never "") so is safe with ??.
         // configuration["AzureBlobStorage:ConnectionString"] can return "" from appsettings.json,
         // so it must be guarded with IsNullOrEmpty to avoid blocking the ?? chain.
-        var v1 = configuration["AzureBlobStorage:ConnectionString"];
+        var rawValue = configuration["AzureBlobStorage:ConnectionString"];
         var connectionString = configuration.GetConnectionString("AzureBlobStorage")
             ?? configuration.GetConnectionString("BlobStorage")
-            ?? (string.IsNullOrEmpty(v1) ? null : v1);
+            ?? (string.IsNullOrEmpty(rawValue) ? null : rawValue);
+
         if (!string.IsNullOrEmpty(connectionString))
             _blobServiceClient = new BlobServiceClient(connectionString);
     }
@@ -35,26 +40,36 @@ public class BlobStorageService : IBlobStorageService
             throw new InvalidOperationException(
                 "Azure Blob Storage is not configured. Set ConnectionStrings:AzureBlobStorage (or AzureBlobStorage:ConnectionString) in configuration.");
 
-        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-        try
-        {
-            await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-        }
-        catch (Azure.RequestFailedException ex) when (ex.ErrorCode == "PublicAccessNotPermitted")
-        {
-            // Storage account has public access disabled at account level.
-            // Create as private container — enable "Allow Blob public access" in Azure Portal
-            // on the storage account to make images publicly viewable via direct URL.
-            await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
-        }
+        var containerClient = await GetOrCreateContainerAsync(containerName);
 
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
         var blobClient = containerClient.GetBlobClient(fileName);
 
-        using var stream = file.OpenReadStream();
+        await using var stream = file.OpenReadStream();
         await blobClient.UploadAsync(stream, new BlobHttpHeaders
         {
             ContentType = file.ContentType
+        });
+
+        return blobClient.Uri.ToString();
+    }
+
+    public async Task<string> UploadProcessedImageAsync(
+        Stream content, string contentType, string extension, string containerName)
+    {
+        if (_blobServiceClient == null)
+            throw new InvalidOperationException(
+                "Azure Blob Storage is not configured. Set ConnectionStrings:AzureBlobStorage (or AzureBlobStorage:ConnectionString) in configuration.");
+
+        var containerClient = await GetOrCreateContainerAsync(containerName);
+
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var blobClient = containerClient.GetBlobClient(fileName);
+
+        if (content.CanSeek) content.Position = 0;
+        await blobClient.UploadAsync(content, new BlobHttpHeaders
+        {
+            ContentType = contentType
         });
 
         return blobClient.Uri.ToString();
@@ -73,9 +88,31 @@ public class BlobStorageService : IBlobStorageService
             var blobClient = containerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Image might have been deleted externally or URL is not a blob URL
+            _logger.LogWarning(ex,
+                "Failed to delete blob {ImageUrl} in container {Container}",
+                imageUrl, containerName);
         }
+    }
+
+    private async Task<BlobContainerClient> GetOrCreateContainerAsync(string containerName)
+    {
+        var containerClient = _blobServiceClient!.GetBlobContainerClient(containerName);
+        try
+        {
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+        }
+        catch (Azure.RequestFailedException ex) when (ex.ErrorCode == "PublicAccessNotPermitted")
+        {
+            // Storage account has public access disabled at account level.
+            // Fall back to a private container — enable "Allow Blob public access" in the
+            // Azure Portal to make images publicly viewable via direct URL.
+            _logger.LogWarning(
+                "Public blob access not permitted for {Container}; created as private container.",
+                containerName);
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
+        }
+        return containerClient;
     }
 }

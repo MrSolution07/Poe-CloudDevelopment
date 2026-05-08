@@ -10,14 +10,7 @@
 <div class="card card-eventease">
     <div class="row g-0">
         <div class="col-md-5">
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <img src="@Model.ImageUrl" alt="@Model.EventName" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
-            }
-            else
-            {
-                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600" alt="Event placeholder" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
-            }
+            <img src="@ImageHelper.ResolveEventImage(Model.ImageUrl)" alt="@Model.EventName" class="img-fluid rounded-start media-detail-img" loading="lazy" />
         </div>
         <div class="col-md-7">
             <div class="card-body p-4">

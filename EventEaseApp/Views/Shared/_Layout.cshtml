@@ -1,3 +1,7 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,10 +26,6 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    @{
-                        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-                        var action = ViewContext.RouteData.Values["action"]?.ToString();
-                    }
                     <ul class="navbar-nav flex-grow-1">
                         @if (User.IsInRole("Admin"))
                         {
@@ -42,7 +42,7 @@
                                 <a class="nav-link @(controller == "Bookings" && action != "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Index">Bookings</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @(controller == "Bookings" && action == "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Overview">Booking Overview</a>
+                                <a class="nav-link fw-semibold @(controller == "Bookings" && action == "Overview" ? "active" : "")" asp-controller="Bookings" asp-action="Overview">Booking Overview</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(controller == "BookingRequests" ? "active" : "")" asp-controller="BookingRequests" asp-action="Index">Booking Requests</a>
@@ -114,7 +114,7 @@
                 <span class="text-muted">&copy; 2026 EventEase</span>
                 <div>
                     <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted me-3">Privacy</a>
-                    <span class="azure-badge">Powered by CE BULABULA</span>
+                    <span class="azure-badge">EventEase &mdash; Venue and event management</span>
                 </div>
             </div>
         </div>

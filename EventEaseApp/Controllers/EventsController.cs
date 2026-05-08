@@ -13,12 +13,21 @@ public class EventsController : Controller
 {
     private readonly EventEaseContext _context;
     private readonly IBlobStorageService _blobService;
+    private readonly IImageProcessingService _imageProcessor;
+    private readonly ILogger<EventsController> _logger;
     private readonly string _containerName;
 
-    public EventsController(EventEaseContext context, IBlobStorageService blobService, IConfiguration config)
+    public EventsController(
+        EventEaseContext context,
+        IBlobStorageService blobService,
+        IImageProcessingService imageProcessor,
+        IConfiguration config,
+        ILogger<EventsController> logger)
     {
         _context = context;
         _blobService = blobService;
+        _imageProcessor = imageProcessor;
+        _logger = logger;
         _containerName = config["AzureBlobStorage:EventContainerName"] ?? "event-images";
     }
 
@@ -54,6 +63,7 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequestSizeLimit(20_971_520)]
     public async Task<IActionResult> Create(Event ev, IFormFile? imageFile)
     {
         if (!ModelState.IsValid)
@@ -62,9 +72,11 @@ public class EventsController : Controller
             return View(ev);
         }
 
-        if (ev.EventDate < DateTime.Now)
+        if (ev.EventDate.Date < DateTime.Today)
         {
-            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select a future date and time.";
+            ModelState.AddModelError(nameof(Event.EventDate),
+                "Event date cannot be in the past. Please select today or a future date.");
+            TempData["ErrorMessage"] = "Event date cannot be in the past.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }
@@ -73,20 +85,55 @@ public class EventsController : Controller
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                if (_blobService.IsConfigured)
-                    ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
-                else
-                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
+                if (!_blobService.IsConfigured)
+                {
+                    ModelState.AddModelError("imageFile",
+                        "Image upload is unavailable because Azure Blob Storage is not configured. Provide an image URL instead.");
+                    TempData["ErrorMessage"] = "Image upload unavailable; provide a URL instead.";
+                    await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+                    return View(ev);
+                }
+
+                using var processed = await _imageProcessor.ProcessAsync(imageFile);
+                ev.ImageUrl = await _blobService.UploadProcessedImageAsync(
+                    processed.Content, processed.ContentType, processed.Extension, _containerName);
             }
 
             _context.Add(ev);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] ??= "Event created successfully.";
+            TempData["SuccessMessage"] = "Event created successfully.";
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception)
+        catch (InvalidImageUploadException ex)
         {
-            TempData["ErrorMessage"] = "An error occurred while creating the event.";
+            ModelState.AddModelError("imageFile", ex.Message);
+            TempData["ErrorMessage"] = ex.Message;
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            _logger.LogError(ex, "Azure Blob upload failed while creating event {EventName}", ev.EventName);
+            ModelState.AddModelError(string.Empty,
+                "We could not upload the image to cloud storage. Please try again.");
+            TempData["ErrorMessage"] = "We could not upload the image to cloud storage. Please try again.";
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error while creating event {EventName}", ev.EventName);
+            ModelState.AddModelError(string.Empty,
+                "We could not save the event due to a database error. Please review your input and try again.");
+            TempData["ErrorMessage"] = "Could not save the event. Please try again.";
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating event {EventName}", ev.EventName);
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
+            TempData["ErrorMessage"] = "An unexpected error occurred while creating the event.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }
@@ -105,6 +152,7 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequestSizeLimit(20_971_520)]
     public async Task<IActionResult> Edit(int id, Event ev, IFormFile? imageFile)
     {
         if (id != ev.EventId) return NotFound();
@@ -115,9 +163,11 @@ public class EventsController : Controller
             return View(ev);
         }
 
-        if (ev.EventDate < DateTime.Now)
+        if (ev.EventDate.Date < DateTime.Today)
         {
-            TempData["ErrorMessage"] = "Event date cannot be in the past. Please select a future date and time.";
+            ModelState.AddModelError(nameof(Event.EventDate),
+                "Event date cannot be in the past. Please select today or a future date.");
+            TempData["ErrorMessage"] = "Event date cannot be in the past.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }
@@ -126,23 +176,43 @@ public class EventsController : Controller
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                if (_blobService.IsConfigured)
+                if (!_blobService.IsConfigured)
                 {
-                    if (!string.IsNullOrEmpty(ev.ImageUrl))
-                        await _blobService.DeleteImageAsync(ev.ImageUrl, _containerName);
+                    ModelState.AddModelError("imageFile",
+                        "Image upload is unavailable because Azure Blob Storage is not configured. Provide an image URL instead.");
+                    TempData["ErrorMessage"] = "Image upload unavailable; provide a URL instead.";
+                    await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+                    return View(ev);
+                }
 
-                    ev.ImageUrl = await _blobService.UploadImageAsync(imageFile, _containerName);
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Azure Blob Storage is not configured. Image was not uploaded — use an image URL instead.";
-                }
+                using var processed = await _imageProcessor.ProcessAsync(imageFile);
+                if (!string.IsNullOrEmpty(ev.ImageUrl))
+                    await _blobService.DeleteImageAsync(ev.ImageUrl, _containerName);
+
+                ev.ImageUrl = await _blobService.UploadProcessedImageAsync(
+                    processed.Content, processed.ContentType, processed.Extension, _containerName);
             }
 
             _context.Update(ev);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] ??= "Event updated successfully.";
+            TempData["SuccessMessage"] = "Event updated successfully.";
             return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidImageUploadException ex)
+        {
+            ModelState.AddModelError("imageFile", ex.Message);
+            TempData["ErrorMessage"] = ex.Message;
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+        catch (Azure.RequestFailedException ex)
+        {
+            _logger.LogError(ex, "Azure Blob upload failed while editing event {EventId}", id);
+            ModelState.AddModelError(string.Empty,
+                "We could not upload the image to cloud storage. Please try again.");
+            TempData["ErrorMessage"] = "We could not upload the image to cloud storage. Please try again.";
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -150,9 +220,20 @@ public class EventsController : Controller
                 return NotFound();
             throw;
         }
-        catch (Exception)
+        catch (DbUpdateException ex)
         {
-            TempData["ErrorMessage"] = "An error occurred while updating the event.";
+            _logger.LogError(ex, "Database error while editing event {EventId}", id);
+            ModelState.AddModelError(string.Empty,
+                "We could not save the event due to a database error. Please review your input and try again.");
+            TempData["ErrorMessage"] = "Could not save the event. Please try again.";
+            await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
+            return View(ev);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while editing event {EventId}", id);
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
+            TempData["ErrorMessage"] = "An unexpected error occurred while updating the event.";
             await PopulateDropdowns(ev.VenueId, ev.EventTypeId);
             return View(ev);
         }
@@ -194,9 +275,15 @@ public class EventsController : Controller
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Event deleted successfully.";
         }
-        catch (Exception)
+        catch (DbUpdateException ex)
         {
-            TempData["ErrorMessage"] = "An error occurred while deleting the event.";
+            _logger.LogError(ex, "Database error while deleting event {EventId}", id);
+            TempData["ErrorMessage"] = "Could not delete the event due to a database error.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting event {EventId}", id);
+            TempData["ErrorMessage"] = "An unexpected error occurred while deleting the event.";
         }
 
         return RedirectToAction(nameof(Index));
