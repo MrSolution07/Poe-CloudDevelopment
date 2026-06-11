@@ -4,7 +4,7 @@
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-RESOURCE_GROUP="EventEase-rg"
+RESOURCE_GROUP="rg-WebApp"
 APP_NAME="st10538419-eventease"
 PUBLISH_DIR="$SCRIPT_DIR/publish"
 ZIP_PATH="$SCRIPT_DIR/deploy.zip"
@@ -36,5 +36,4 @@ az webapp deploy \
   --src-path "$ZIP_PATH" \
   --type zip
 
-# I will make a new version of thise please do not run it 
 echo "Done. Visit: https://st10538419-eventease-ebbpdwa4dsbpg6cs.switzerlandnorth-01.azurewebsites.net/"

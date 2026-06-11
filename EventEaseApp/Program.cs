@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using EventEaseApp.Data;
@@ -80,7 +81,12 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<EventEaseContext>();
-    context.Database.EnsureCreated();
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+
+    if (context.Database.IsRelational())
+        await EnsureRelationalSchemaAsync(context, startupLogger);
+    else
+        await context.Database.EnsureCreatedAsync();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     if (!await roleManager.RoleExistsAsync("Admin"))
@@ -103,7 +109,7 @@ using (var scope = app.Services.CreateScope())
         {
             UserName = adminEmail,
             Email = adminEmail,
-            FullName = "Admin User",
+            FullName = "System Admin",
             EmailConfirmed = true
         };
         await userManager.CreateAsync(admin, adminPassword);
@@ -140,3 +146,60 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+static async Task EnsureRelationalSchemaAsync(EventEaseContext context, ILogger logger)
+{
+    string[] identityTables =
+    [
+        "AspNetRoles",
+        "AspNetUsers",
+        "AspNetUserRoles",
+        "AspNetUserClaims",
+        "AspNetUserLogins",
+        "AspNetUserTokens",
+        "AspNetRoleClaims"
+    ];
+
+    if (!await context.Database.CanConnectAsync())
+    {
+        throw new InvalidOperationException(
+            "Cannot connect to the configured SQL database. Check DefaultConnection and Azure SQL firewall rules.");
+    }
+
+    var tableList = string.Join(", ", identityTables.Select(name => $"'{name}'"));
+    var existingIdentityTables = await context.Database
+        .SqlQueryRaw<int>($"SELECT CAST(COUNT(*) AS int) AS [Value] FROM sys.tables WHERE name IN ({tableList})")
+        .SingleAsync();
+
+    if (existingIdentityTables == identityTables.Length)
+        return;
+
+    logger.LogInformation(
+        "ASP.NET Identity schema incomplete ({Existing}/{Total}) — creating missing tables.",
+        existingIdentityTables,
+        identityTables.Length);
+
+    // script.sql creates domain tables, but EnsureCreated() is skipped when the database
+    // already exists. Generate and run only the Identity DDL from the EF model.
+    var script = context.Database.GenerateCreateScript();
+    var batches = Regex.Split(script, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+
+    foreach (var batch in batches)
+    {
+        var sql = batch.Trim();
+        if (string.IsNullOrWhiteSpace(sql))
+            continue;
+        if (!sql.Contains("AspNet", StringComparison.OrdinalIgnoreCase))
+            continue;
+
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(sql);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number is 2714 or 1913 or 2705)
+        {
+            // Object/index/column already exists from a previous partial startup attempt.
+            logger.LogWarning("Skipped identity DDL batch: {Message}", ex.Message);
+        }
+    }
+}

@@ -9,9 +9,21 @@ BEGIN
         VenueName  NVARCHAR(200)  NOT NULL,
         Location   NVARCHAR(500)  NOT NULL,
         Capacity   INT            NOT NULL CHECK (Capacity > 0),
-        ImageUrl   NVARCHAR(1000) NULL
+        ImageUrl   NVARCHAR(1000) NULL,
+        IsAvailable BIT           NOT NULL DEFAULT 1
     );
 END; 
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Venues')
+   AND NOT EXISTS (
+       SELECT 1
+       FROM sys.columns
+       WHERE object_id = OBJECT_ID('Venues')
+         AND name = 'IsAvailable'
+   )
+BEGIN
+    ALTER TABLE Venues ADD IsAvailable BIT NOT NULL DEFAULT 1;
+END;
 
 
 
@@ -47,6 +59,25 @@ BEGIN
             FOREIGN KEY (EventTypeId)
             REFERENCES EventTypes(EventTypeId)
     );
+END;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Events')
+   AND NOT EXISTS (
+       SELECT 1
+       FROM sys.columns
+       WHERE object_id = OBJECT_ID('Events')
+         AND name = 'EventTypeId'
+   )
+BEGIN
+    ALTER TABLE Events ADD EventTypeId INT NULL;
+END;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Events')
+   AND NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Events_EventTypes')
+BEGIN
+    ALTER TABLE Events
+    ADD CONSTRAINT FK_Events_EventTypes
+        FOREIGN KEY (EventTypeId) REFERENCES EventTypes(EventTypeId);
 END;
 
 
@@ -96,28 +127,28 @@ END;
 -- to the neutral venue-fallback.jpg via the application's ImageHelper.
 IF NOT EXISTS (SELECT 1 FROM Venues)
 BEGIN
-    INSERT INTO Venues (VenueName, Location, Capacity, ImageUrl) VALUES
+    INSERT INTO Venues (VenueName, Location, Capacity, ImageUrl, IsAvailable) VALUES
         ('Grand Ballroom',  '123 Main Street, Johannesburg', 500,
-         '/images/venue-grand-ballroom.jpg'),
+         '/images/venue-grand-ballroom.jpg', 1),
         ('Garden Pavilion', '45 Park Lane, Cape Town',       200,
-         '/images/venue-garden-pavilion.jpg'),
+         '/images/venue-garden-pavilion.jpg', 1),
         ('Rooftop Terrace', '78 Skyline Drive, Durban',      150,
-         '/images/venue-rooftop-terrace.jpg');
+         '/images/venue-rooftop-terrace.jpg', 1);
 END;
 
 -- Sample Events — ImageUrl points at themed local images — see comment above.
 IF NOT EXISTS (SELECT 1 FROM Events)
 BEGIN
-    INSERT INTO Events (EventName, EventDate, Description, VenueId, ImageUrl) VALUES
+    INSERT INTO Events (EventName, EventDate, Description, VenueId, EventTypeId, ImageUrl) VALUES
         ('Tech Summit 2026',    '2026-06-15',
          'Annual technology conference featuring keynote speakers and workshops.',
-         1, '/images/event-tech-summit.jpg'),
+         1, 1, '/images/event-tech-summit.jpg'),
         ('Spring Wedding Expo', '2026-09-20',
          'Showcase of wedding vendors, venues, and planning services.',
-         2, '/images/event-wedding-expo.jpg'),
+         2, 2, '/images/event-wedding-expo.jpg'),
         ('Jazz Night',          '2026-07-10',
          'An evening of live jazz music under the stars on the rooftop terrace.',
-         3, '/images/event-jazz-night.jpg');
+         3, 3, '/images/event-jazz-night.jpg');
 END;
 
 -- Sample Bookings
