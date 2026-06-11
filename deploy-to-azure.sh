@@ -36,4 +36,5 @@ az webapp deploy \
   --src-path "$ZIP_PATH" \
   --type zip
 
+# I will make a new version of thise please do not run it 
 echo "Done. Visit: https://st10538419-eventease-ebbpdwa4dsbpg6cs.switzerlandnorth-01.azurewebsites.net/"
