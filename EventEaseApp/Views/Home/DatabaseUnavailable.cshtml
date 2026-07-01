@@ -1,0 +1,24 @@
+@model EventEaseApp.Data.DatabaseAvailabilityState
+@{
+    ViewData["Title"] = "Service temporarily unavailable";
+    Layout = "_Layout";
+}
+
+<div class="text-center py-5 px-3" style="max-width: 42rem; margin: 0 auto;">
+    <div class="mb-3" aria-hidden="true">
+        <i class="bi bi-cloud-slash text-secondary" style="font-size: 3.5rem;"></i>
+    </div>
+    <p class="text-uppercase small text-muted mb-2">Service unavailable</p>
+    <h1 class="h2 fw-semibold mb-3">EventEase is temporarily offline</h1>
+    <p class="text-muted mb-4">@Model.Message</p>
+    <div class="p-4 rounded-3 text-start mb-4" style="background: var(--eventease-surface-alt); border: 1px solid var(--eventease-border);">
+        <h2 class="h6 fw-semibold mb-2">If you are using Azure for Students</h2>
+        <ul class="small text-muted mb-0 ps-3">
+            <li>Free SQL databases can pause when usage limits are reached.</li>
+            <li>Open Azure Portal and resume the database, or create a new free database.</li>
+            <li>Update the App Service <code>DefaultConnection</code> string if the database name changed.</li>
+            <li>Restart the web app after the database is online again.</li>
+        </ul>
+    </div>
+    <button type="button" class="btn btn-eventease-primary" onclick="window.location.reload()">Try again</button>
+</div>

@@ -45,6 +45,13 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult DatabaseUnavailable([FromServices] DatabaseAvailabilityState databaseAvailability)
+    {
+        Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        return View(databaseAvailability);
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [Route("Home/Error")]
     [Route("Home/Error/{code:int}")]
     public IActionResult Error(int? code = null)

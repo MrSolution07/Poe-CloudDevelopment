@@ -1,16 +1,23 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using EventEaseApp.Data;
+using EventEaseApp.Filters;
+using EventEaseApp.Middleware;
 using EventEaseApp.Models;
 using EventEaseApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var databaseAvailability = new DatabaseAvailabilityState();
+builder.Services.AddSingleton(databaseAvailability);
+
 // Load optional local overrides (e.g. Azure connection string) — appsettings.Development.local.json is gitignored
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<DatabaseAvailabilityFilter>();
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -83,40 +90,67 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<EventEaseContext>();
     var startupLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 
-    if (context.Database.IsRelational())
-        await EnsureRelationalSchemaAsync(context, startupLogger);
-    else
-        await context.Database.EnsureCreatedAsync();
-
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var configuredEmail = app.Configuration["AdminSeed:Email"];
-    var configuredPassword = app.Configuration["AdminSeed:Password"];
-    var adminEmail = !string.IsNullOrWhiteSpace(configuredEmail)
-        ? configuredEmail
-        : "admin@eventease.co.za";
-    var adminPassword = !string.IsNullOrWhiteSpace(configuredPassword)
-        ? configuredPassword
-        : "Admin123";
-
-    var admin = await userManager.FindByEmailAsync(adminEmail);
-    if (admin == null)
+    try
     {
-        admin = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FullName = "System Admin",
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(admin, adminPassword);
-    }
+        var bootstrapResult = context.Database.IsRelational()
+            ? await RelationalSchemaBootstrapper.TryEnsureAsync(context, app.Environment, startupLogger)
+            : DatabaseBootstrapResult.Available();
 
-    if (!await userManager.IsInRoleAsync(admin, "Admin"))
-        await userManager.AddToRoleAsync(admin, "Admin");
+        if (!bootstrapResult.IsAvailable)
+        {
+            databaseAvailability.MarkUnavailable(bootstrapResult.Message);
+        }
+        else if (!context.Database.IsRelational())
+        {
+            await context.Database.EnsureCreatedAsync();
+        }
+
+        if (databaseAvailability.IsAvailable)
+        {
+            try
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                if (!await roleManager.RoleExistsAsync("Admin"))
+                    await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var configuredEmail = app.Configuration["AdminSeed:Email"];
+                var configuredPassword = app.Configuration["AdminSeed:Password"];
+                var adminEmail = !string.IsNullOrWhiteSpace(configuredEmail)
+                    ? configuredEmail
+                    : "admin@eventease.co.za";
+                var adminPassword = !string.IsNullOrWhiteSpace(configuredPassword)
+                    ? configuredPassword
+                    : "Admin123";
+
+                var admin = await userManager.FindByEmailAsync(adminEmail);
+                if (admin == null)
+                {
+                    admin = new ApplicationUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        FullName = "System Admin",
+                        EmailConfirmed = true
+                    };
+                    await userManager.CreateAsync(admin, adminPassword);
+                }
+
+                if (!await userManager.IsInRoleAsync(admin, "Admin"))
+                    await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            catch (Exception ex)
+            {
+                // Keep the site online when only admin seeding fails — the database itself is usable.
+                startupLogger.LogWarning(ex, "Admin user seeding failed; continuing startup.");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogError(ex, "Startup database initialization failed.");
+        databaseAvailability.MarkUnavailable(DatabaseAvailabilityState.ResolveMessage(ex));
+    }
 }
 
 if (!app.Environment.IsDevelopment())
@@ -134,6 +168,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseHttpsRedirection();
+app.UseMiddleware<DatabaseUnavailableMiddleware>();
 app.UseRouting();
 
 app.UseAuthentication();
@@ -146,60 +181,3 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
-
-static async Task EnsureRelationalSchemaAsync(EventEaseContext context, ILogger logger)
-{
-    string[] identityTables =
-    [
-        "AspNetRoles",
-        "AspNetUsers",
-        "AspNetUserRoles",
-        "AspNetUserClaims",
-        "AspNetUserLogins",
-        "AspNetUserTokens",
-        "AspNetRoleClaims"
-    ];
-
-    if (!await context.Database.CanConnectAsync())
-    {
-        throw new InvalidOperationException(
-            "Cannot connect to the configured SQL database. Check DefaultConnection and Azure SQL firewall rules.");
-    }
-
-    var tableList = string.Join(", ", identityTables.Select(name => $"'{name}'"));
-    var existingIdentityTables = await context.Database
-        .SqlQueryRaw<int>($"SELECT CAST(COUNT(*) AS int) AS [Value] FROM sys.tables WHERE name IN ({tableList})")
-        .SingleAsync();
-
-    if (existingIdentityTables == identityTables.Length)
-        return;
-
-    logger.LogInformation(
-        "ASP.NET Identity schema incomplete ({Existing}/{Total}) — creating missing tables.",
-        existingIdentityTables,
-        identityTables.Length);
-
-    // script.sql creates domain tables, but EnsureCreated() is skipped when the database
-    // already exists. Generate and run only the Identity DDL from the EF model.
-    var script = context.Database.GenerateCreateScript();
-    var batches = Regex.Split(script, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-
-    foreach (var batch in batches)
-    {
-        var sql = batch.Trim();
-        if (string.IsNullOrWhiteSpace(sql))
-            continue;
-        if (!sql.Contains("AspNet", StringComparison.OrdinalIgnoreCase))
-            continue;
-
-        try
-        {
-            await context.Database.ExecuteSqlRawAsync(sql);
-        }
-        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number is 2714 or 1913 or 2705)
-        {
-            // Object/index/column already exists from a previous partial startup attempt.
-            logger.LogWarning("Skipped identity DDL batch: {Message}", ex.Message);
-        }
-    }
-}
